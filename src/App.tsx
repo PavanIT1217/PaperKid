@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { AccountButton } from './components/AccountButton';
 import { Builder } from './components/Builder';
 import { Home } from './components/Home';
 import { initAnalytics, trackPage } from './lib/analytics';
@@ -53,6 +54,7 @@ export function App() {
               <option value="Letter">US Letter</option>
             </select>
           </label>
+          <AccountButton />
         </div>
       </header>
       {ws ? <Builder key={hash} def={ws} initial={route.opts} common={common} setCommon={setCommon} /> : <Home />}

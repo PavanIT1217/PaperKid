@@ -1,6 +1,8 @@
+import { deleteRemote, listRemote, putRemote } from './firebase';
 import { load, save } from './storage';
 
-// "My saved worksheets" – kept in this browser for now. When sign-in is added these can sync.
+// "My saved worksheets": in Firestore when signed in (synced across devices),
+// otherwise in this browser. Signing in moves this browser's list into the account.
 export interface SavedSheet {
   key: string;
   id: string;
@@ -10,19 +12,36 @@ export interface SavedSheet {
   savedAt: number;
 }
 
-export function listSaved(): SavedSheet[] {
+let uid: string | null = null;
+export function setSavedAccount(u: string | null) {
+  uid = u;
+}
+
+function listLocal(): SavedSheet[] {
   const v = load<SavedSheet[]>('saved', []);
   return Array.isArray(v) ? v : [];
 }
 
-export function addSaved(s: Omit<SavedSheet, 'key' | 'savedAt'>): SavedSheet[] {
-  const list = [{ ...s, key: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, savedAt: Date.now() }, ...listSaved()].slice(0, 50);
-  save('saved', list);
-  return list;
+export async function listSaved(): Promise<SavedSheet[]> {
+  return uid ? listRemote(uid) : listLocal();
 }
 
-export function removeSaved(key: string): SavedSheet[] {
-  const list = listSaved().filter((s) => s.key !== key);
-  save('saved', list);
-  return list;
+export async function addSaved(s: Omit<SavedSheet, 'key' | 'savedAt'>): Promise<void> {
+  const sheet: SavedSheet = { ...s, key: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, savedAt: Date.now() };
+  if (uid) await putRemote(uid, [sheet]);
+  else save('saved', [sheet, ...listLocal()].slice(0, 50));
+}
+
+export async function removeSaved(key: string): Promise<void> {
+  if (uid) await deleteRemote(uid, key);
+  else save('saved', listLocal().filter((s) => s.key !== key));
+}
+
+/** After sign-in: upload anything saved on this device, then clear the local copy. */
+export async function moveLocalToAccount(account: string): Promise<number> {
+  const local = listLocal();
+  if (!local.length) return 0;
+  await putRemote(account, local);
+  save('saved', []);
+  return local.length;
 }

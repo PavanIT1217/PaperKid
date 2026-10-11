@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useAccount } from '../lib/account';
 import { track } from '../lib/analytics';
 import { buildPdf, pageInfo, PAPER, printPdf, savePdf, type CommonOptions } from '../lib/render';
 import { addSaved } from '../lib/saved';
@@ -68,12 +69,22 @@ export function Builder({ def, initial, common, setCommon }: Props) {
     }
   };
 
-  const saveSheet = () => {
+  const { account } = useAccount();
+  const saveSheet = async () => {
     const name = window.prompt('Name for this worksheet', def.title);
     if (name === null) return;
-    addSaved({ id: def.id, name: name.trim() || def.title, icon: def.icon, opts });
-    track('save_sheet', { worksheet: def.id });
-    setToast('Saved! Find it under “My saved worksheets” on the home page.');
+    try {
+      await addSaved({ id: def.id, name: name.trim() || def.title, icon: def.icon, opts });
+      track('save_sheet', { worksheet: def.id });
+      setToast(
+        account
+          ? 'Saved to your account! It’s on the home page on every device you sign in on.'
+          : 'Saved on this device. Sign in with Google to keep it on all your devices.',
+      );
+    } catch (e) {
+      console.error(e);
+      setToast('Sorry, it could not be saved. Please check your connection and try again.');
+    }
   };
   const [ref, cssWidth] = usePreviewWidth();
 

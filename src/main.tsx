@@ -10,9 +10,12 @@ import '@fontsource/noto-sans-devanagari/devanagari-500.css';
 import '@fontsource/noto-sans-telugu/telugu-500.css';
 import './styles.css';
 import { App } from './App';
+import { AccountProvider } from './lib/account';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <AccountProvider>
+      <App />
+    </AccountProvider>
   </StrictMode>,
 );

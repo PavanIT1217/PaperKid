@@ -73,6 +73,14 @@ From Android Studio: *Build → Generate Signed App Bundle* → upload the `.aab
 From Xcode: set your Team & bundle id (`com.webappslab.paperkid` in `capacitor.config.ts`), *Product → Archive* → upload to App Store Connect.
 Before publishing you'll want app icons and splash screens (e.g. `npx @capacitor/assets generate`).
 
+## Sign-in & saved worksheets (Firebase)
+
+- **Sign in with Google** (top bar, website) uses Firebase Authentication, project `paperkid`.
+- **♡ Save** stores worksheet settings in Cloud Firestore at `users/{uid}/saved/{id}` when signed in, and in the browser otherwise. Things saved before signing in are moved into the account on first sign-in.
+- Security rules live in `firestore.rules`: each user can only read/write their own `users/{uid}/saved` documents. Publish them in the Firebase console (**Firestore Database → Rules**) or with `npx firebase-tools deploy --only firestore:rules`.
+- The Firebase web config in `src/lib/firebase.ts` is public by design; the rules are what protect the data.
+- In the iOS/Android apps the sign-in button is hidden for now (Google's pop-up sign-in needs a native plugin there); saving works on the device.
+
 ## Analytics (optional)
 
 The site can send anonymous Google Analytics 4 events (page views, PDF downloads/prints, share links, saves).
@@ -86,5 +94,5 @@ Create a GA4 property, then in GitHub: **Settings → Secrets and variables → 
 
 ## Ideas for next steps
 
-- Google sign-in to sync saved worksheets and children's profiles across devices
+- Google sign-in inside the native apps, child profiles and progress tracking
 - More scripts (Tamil, Kannada…), cut-and-paste activities, word searches

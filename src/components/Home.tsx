@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useAccount } from '../lib/account';
 import { PAPER, pageInfo } from '../lib/render';
 import { listSaved, removeSaved, type SavedSheet } from '../lib/saved';
 import { routeFor } from '../lib/share';
@@ -10,7 +11,17 @@ import { PageCanvas } from './PageCanvas';
 const INFO = pageInfo({ paper: 'A4', childName: '', showNameLine: true, inkSaver: false }, 0, 1);
 
 export function Home() {
-  const [saved, setSaved] = useState<SavedSheet[]>(listSaved);
+  const { account, version } = useAccount();
+  const [saved, setSaved] = useState<SavedSheet[]>([]);
+  useEffect(() => {
+    let live = true;
+    listSaved()
+      .then((list) => live && setSaved(list))
+      .catch((e) => console.warn('Could not load saved worksheets', e));
+    return () => {
+      live = false;
+    };
+  }, [account?.uid, version]);
   const thumbs = useMemo(
     () =>
       WORKSHEETS.map((w) => {
@@ -68,13 +79,17 @@ export function Home() {
       {saved.length > 0 && (
         <section className="saved">
           <h2 className="section-title">My saved worksheets</h2>
+          <p className="section-blurb">{account ? `Synced to ${account.email || 'your Google account'}.` : 'Saved on this device. Sign in to keep them on all your devices.'}</p>
           <div className="saved-list">
             {saved.map((s) => (
               <div key={s.key} className="saved-item">
                 <a href={routeFor(s.id, s.opts)}>
                   <span className="pack-icon">{s.icon}</span> {s.name}
                 </a>
-                <button aria-label={`Remove ${s.name}`} onClick={() => setSaved(removeSaved(s.key))}>
+                <button aria-label={`Remove ${s.name}`} onClick={async () => {
+                    await removeSaved(s.key);
+                    setSaved((list) => list.filter((x) => x.key !== s.key));
+                  }}>
                   ×
                 </button>
               </div>
