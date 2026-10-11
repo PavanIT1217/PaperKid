@@ -6,6 +6,7 @@ export type PaperSize = 'A4' | 'Letter';
 
 export interface CommonOptions {
   paper: PaperSize;
+  country: string;
   childName: string;
   showNameLine: boolean;
   inkSaver: boolean;
@@ -24,6 +25,11 @@ export function ensureFonts(): Promise<unknown> {
     document.fonts.load('500 16px "Noto Sans Telugu"', 'క'),
   ]).catch(() => undefined);
   return fontsReady;
+}
+
+/** Page geometry plus the country, as handed to worksheet builders. */
+export function paperFor(common: Pick<CommonOptions, 'paper' | 'country'>): Paper {
+  return { ...PAPER[common.paper], country: common.country };
 }
 
 export function pageInfo(common: CommonOptions, i: number, count: number): PageInfo {

@@ -9,9 +9,9 @@ import { CATEGORIES } from '../worksheets/types';
 import { PageCanvas } from './PageCanvas';
 import { Workbooks } from './Workbooks';
 
-const INFO = pageInfo({ paper: 'A4', childName: '', showNameLine: true, inkSaver: false }, 0, 1);
+const INFO = pageInfo({ paper: 'A4', country: 'intl', childName: '', showNameLine: true, inkSaver: false }, 0, 1);
 
-export function Home() {
+export function Home({ country }: { country: string }) {
   const { account, version } = useAccount();
   const [saved, setSaved] = useState<SavedSheet[]>([]);
   useEffect(() => {
@@ -28,13 +28,13 @@ export function Home() {
       WORKSHEETS.map((w) => {
         let page;
         try {
-          page = w.build(w.defaults, PAPER.A4)[0];
+          page = w.build(w.defaults, { ...PAPER.A4, country })[0];
         } catch {
           page = undefined;
         }
         return { w, page };
       }),
-    [],
+    [country],
   );
   const letters = thumbs.find((t) => t.w.id === 'letters');
 
@@ -65,8 +65,8 @@ export function Home() {
             Practice pages your kids <span className="hl">love</span> to fill in.
           </h1>
           <p>
-            Free printable A4 worksheets for Pre-K to Grade 3 – tracing with stroke-order arrows, names and sight words, cursive, Hindi
-            & Telugu letters, math, clocks, money, mazes, dot-to-dots and coloring. Ready in seconds, no sign-up.
+            Free printable worksheets for Pre-K to Grade 3 – tracing with stroke-order arrows, names and sight words, cursive, other
+            alphabets, math, clocks, money, mazes, dot-to-dots and coloring. Ready in seconds, no sign-up.
           </p>
           <div className="hero-cta">
             <a className="btn primary" href="#/daily">

@@ -6,12 +6,14 @@ export interface Paper {
   W: number;
   H: number;
   margin: number;
+  /** country code from the top-bar setting (picture words, currency, dates) */
+  country?: string;
 }
 
 export type Category = 'packs' | 'writing' | 'reading' | 'math' | 'fun';
 
 export const CATEGORIES: { id: Category; title: string; blurb: string }[] = [
-  { id: 'writing', title: 'Handwriting', blurb: 'Letters, names, cursive, Indian scripts and pencil control.' },
+  { id: 'writing', title: 'Handwriting', blurb: 'Letters, names, cursive, other alphabets and pencil control.' },
   { id: 'reading', title: 'Reading & phonics', blurb: 'Sight-word sentences, letter sounds and alphabet games.' },
   { id: 'math', title: 'Math', blurb: 'Counting, sums, times tables, number sense, clocks and money.' },
   { id: 'fun', title: 'Puzzles & coloring', blurb: 'Mazes, dot-to-dot, patterns, shapes and coloring pages.' },

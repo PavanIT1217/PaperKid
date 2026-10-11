@@ -1,3 +1,4 @@
+import { countryOf } from '../lib/country';
 import { card, emoji, fadeStyle, footer, glyphText, guideLines, header, practiceRow, text, FONT_TITLE } from '../lib/draw';
 import { measureText } from '../lib/glyphs';
 import { capFor, fitRows, SIZE_FIELD, type DrawPage, type WorksheetDef } from './types';
@@ -33,8 +34,8 @@ export const LETTER_WORDS: Record<string, [string, string]> = {
   Z: ['Zebra', '🦓'],
 };
 
-/** Picture words familiar to children in India. */
-export const INDIA_WORDS: Record<string, [string, string]> = {
+/** Regional picture-word sets, chosen by the country setting. */
+const IN_WORDS: Record<string, [string, string]> = {
   A: ['Apple', '🍎'],
   B: ['Banana', '🍌'],
   C: ['Coconut', '🥥'],
@@ -63,12 +64,16 @@ export const INDIA_WORDS: Record<string, [string, string]> = {
   Z: ['Zebra', '🦓'],
 };
 
+/** "A is for …" words for a country (falls back to the classic set). */
+export function pictureWords(country?: string): Record<string, [string, string]> {
+  return countryOf(country).words === 'IN' ? IN_WORDS : LETTER_WORDS;
+}
+
 type LetterOpts = {
   letters: string[];
   letterCase: 'both' | 'upper' | 'lower';
   size: 'large' | 'medium' | 'small';
   picture: boolean;
-  wordSet: 'classic' | 'india';
   hints: boolean;
   fade: boolean;
 };
@@ -83,7 +88,7 @@ export const letters: WorksheetDef<LetterOpts> = {
   grades: 'Pre-K – Grade 1',
   category: 'writing',
   theme,
-  defaults: { letters: ['A', 'B', 'C'], letterCase: 'both', size: 'large', picture: true, wordSet: 'classic', hints: true, fade: false },
+  defaults: { letters: ['A', 'B', 'C'], letterCase: 'both', size: 'large', picture: true, hints: true, fade: false },
   fields: [
     {
       type: 'chips',
@@ -104,25 +109,15 @@ export const letters: WorksheetDef<LetterOpts> = {
     },
     SIZE_FIELD,
     { type: 'toggle', key: 'picture', label: 'Picture word (A is for Apple)' },
-    {
-      type: 'segmented',
-      key: 'wordSet',
-      label: 'Picture words',
-      options: [
-        { value: 'classic', label: 'Classic' },
-        { value: 'india', label: 'India 🇮🇳' },
-      ],
-      when: (o) => Boolean(o.picture),
-    },
     { type: 'toggle', key: 'hints', label: 'Arrows on traced letters' },
     { type: 'toggle', key: 'fade', label: 'Fade the dots row by row', hint: 'Dark dots → light dots → start dots only' },
   ],
   fileName: (o) => `PaperKid-letters-${o.letters.length === 26 ? 'A-Z' : o.letters.join('')}`,
-  build(o) {
+  build(o, paper) {
     const list = ALPHABET.filter((l) => o.letters.includes(l));
     return list.map((L): DrawPage => (ctx, p) => {
       const l = L.toLowerCase();
-      const [word, pic] = (o.wordSet === 'india' ? INDIA_WORDS : LETTER_WORDS)[L];
+      const [word, pic] = pictureWords(paper.country)[L];
       const shown = o.letterCase === 'both' ? `${L} ${l}` : o.letterCase === 'upper' ? L : l;
       const top = header(ctx, p, theme, `Let's write ${shown.replace(' ', ' and ')}`, 'Start at the green dot and follow the arrows.', pic);
       const { W, H, margin: m } = p;

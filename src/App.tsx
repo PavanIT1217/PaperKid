@@ -3,17 +3,22 @@ import { AccountButton } from './components/AccountButton';
 import { Builder } from './components/Builder';
 import { Home } from './components/Home';
 import { initAnalytics, trackPage } from './lib/analytics';
+import { COUNTRIES, countryOf, guessCountry } from './lib/country';
 import type { CommonOptions } from './lib/render';
 import { parseRoute } from './lib/share';
 import { load, save } from './lib/storage';
 import { findWorksheet } from './worksheets';
 
-const COMMON_DEFAULTS: CommonOptions = { paper: 'A4', childName: '', showNameLine: true, inkSaver: false };
+function initialCommon(): CommonOptions {
+  const saved = load<Partial<CommonOptions>>('common', {});
+  const country = saved.country ?? guessCountry();
+  return { paper: countryOf(country).paper, childName: '', showNameLine: true, inkSaver: false, ...saved, country };
+}
 
 
 export function App() {
   const [hash, setHash] = useState(() => location.hash);
-  const [common, setCommon] = useState<CommonOptions>(() => ({ ...COMMON_DEFAULTS, ...load('common', {}) }));
+  const [common, setCommon] = useState<CommonOptions>(initialCommon);
 
   useEffect(() => {
     initAnalytics();
@@ -47,6 +52,22 @@ export function App() {
           </span>
         </a>
         <div className="topbar-right">
+          <label className="paper-select country-select" title="Country: picture words, money, dates and paper size">
+            <span className="sr-only">Country</span>
+            <select
+              value={common.country}
+              onChange={(e) => {
+                const c = countryOf(e.target.value);
+                setCommon({ ...common, country: c.code, paper: c.paper });
+              }}
+            >
+              {COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.flag} {c.name}
+                </option>
+              ))}
+            </select>
+          </label>
           <label className="paper-select">
             <span>Paper</span>
             <select value={common.paper} onChange={(e) => setCommon({ ...common, paper: e.target.value as CommonOptions['paper'] })}>
@@ -57,7 +78,7 @@ export function App() {
           <AccountButton />
         </div>
       </header>
-      {ws ? <Builder key={hash} def={ws} initial={route.opts} common={common} setCommon={setCommon} /> : <Home />}
+      {ws ? <Builder key={hash} def={ws} initial={route.opts} common={common} setCommon={setCommon} /> : <Home country={common.country} />}
     </div>
   );
 }

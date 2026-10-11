@@ -9,10 +9,10 @@ Pick a worksheet, choose what to practice, and download a print-ready **A4** (or
 | 📚 **Workbook Packs** | One PDF with a cover + contents: Alphabet A–Z, Numbers 0–20, Pre-K Starter, Kindergarten Week, Grade 1, Grade 2–3, Summer Fun – each ends with a certificate |
 | 📅 **Daily Practice** | Letter of the day (A→Z from any letter, remembering where you stopped, or by calendar), quick math, word of the day or pencil path, picture to color; 1–7 days with a week cover/star chart and answer page |
 | 🏆 **Certificates & Charts** | Award certificates (Alphabet Star, Math Champion… or your own), weekly star charts, sticker charts |
-| ✏️ **ABC Tracing** | Model letter with numbered stroke-order arrows, arrows on traced letters, optional fading practice (dark → light → start dots), Classic or India picture words |
+| ✏️ **ABC Tracing** | Model letter with numbered stroke-order arrows, arrows on traced letters, optional fading practice (dark → light → start dots), picture words that follow the country setting |
 | 📝 **Words & Names** | Names, custom words/sentences, Dolch sight words Pre-K → Grade 3 |
 | 🖋️ **Cursive Writing** | Joined-up letters and words (Playwrite US Trad school font) |
-| 🪔 **Hindi & Telugu Letters** | Vowels and consonants, 6 per page or one big letter per page |
+| 🌏 **More Alphabets** | Other writing systems (currently Hindi/Devanagari and Telugu): 6 letters per page or one big letter per page |
 | 〰️ **Pre-writing Lines** | Waves, zigzags, loops… from a picture to a picture |
 | 📖 **I Can Read!** | Sight-word sentence + line-art picture to color + trace + write |
 | 🔤 **ABC Games** | Beginning sounds, missing letters, match upper/lower case |
@@ -20,13 +20,15 @@ Pick a worksheet, choose what to practice, and download a print-ready **A4** (or
 | ➕ **Math Practice** | Picture math → 3-digit, times tables, division, answer keys |
 | 💯 **Number Sense** | Number bonds, 100 chart, odd/even, skip counting, before/after/between, greater/less |
 | 🕒 **Telling Time** | Read or draw clock hands: hours → any minute |
-| 🪙 **Counting Money** | ₹ rupees, $ dollars, £ pounds, € euros |
+| 🪙 **Counting Money** | Uses your country's money by default; US, Canadian and Australian dollars, pounds, euros, rupees |
 | 🌀 **Mazes** | Easy → expert, fresh every time, answer pages |
 | ✨ **Dot-to-Dot** | Numbers, letters or skip counting (2s, 5s, 10s) |
 | 🧩 **What Comes Next?** | AB, AAB, ABC… picture patterns |
 | 🔷 **Shapes** / 🖍️ **Coloring Pages** | Trace shapes; 13 bold line-art pictures |
 
 Also: **share links** (settings travel in the URL – great for teachers), **♡ Save** worksheets to "My saved worksheets" on this device, installable web app (manifest + icons).
+
+**Country setting** (top bar): International, United States, United Kingdom, India, Canada, Australia or Europe. It sets the "A is for…" picture words, the default currency, how dates are written and the default paper size (Letter for US/Canada, A4 elsewhere). It's guessed from the browser language the first time.
 
 Page options: child's name printed on the page, name/date line, ink-saver mode, A4 or US Letter.
 
