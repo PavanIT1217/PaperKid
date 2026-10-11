@@ -14,6 +14,7 @@ import { packs } from './packs';
 import { patterns } from './patterns';
 import { phonics } from './phonics';
 import { reading } from './reading';
+import { registerWorksheets } from './registry';
 import { rewards } from './rewards';
 import { scripts } from './scripts';
 import { shapes } from './shapes';
@@ -42,6 +43,8 @@ export const WORKSHEETS = [
   shapes,
   coloring,
 ] as unknown as WorksheetDef[];
+
+registerWorksheets(WORKSHEETS);
 
 export function findWorksheet(id: string): WorksheetDef | undefined {
   return WORKSHEETS.find((w) => w.id === id);

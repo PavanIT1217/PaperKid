@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { track } from './analytics';
 import { signIn, signOutUser, watchAccount, type Account } from './firebase';
 import { moveLocalToAccount, setSavedAccount } from './saved';
+import { moveLocalRecords } from './userdata';
 
 interface AccountState {
   account: Account | null;
@@ -33,6 +34,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         if (a) {
           try {
             await moveLocalToAccount(a.uid);
+            await moveLocalRecords(a.uid, ['workbooks', 'progress']);
           } catch (e) {
             console.warn('Could not sync saved worksheets', e);
           }

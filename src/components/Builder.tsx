@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useAccount } from '../lib/account';
 import { track } from '../lib/analytics';
+import { getRecord, putRecord } from '../lib/userdata';
+import { startWorkbook } from '../lib/workbooks';
+import { nextStartLetter, type DailyOpts } from '../worksheets/daily';
 import { buildPdf, pageInfo, PAPER, printPdf, savePdf, type CommonOptions } from '../lib/render';
 import { addSaved } from '../lib/saved';
 import { shareUrl } from '../lib/share';
@@ -90,6 +93,42 @@ export function Builder({ def, initial, common, setCommon }: Props) {
 
   useEffect(() => save(`ws:${def.id}`, opts), [def.id, opts]);
 
+  // Daily practice: continue the A→Z sequence from where this family stopped (device or account).
+  useEffect(() => {
+    if (def.id !== 'daily' || initial) return;
+    let live = true;
+    getRecord('progress', 'daily')
+      .then((r) => {
+        const next = r?.startLetter;
+        if (live && typeof next === 'string' && /^[A-Z]$/.test(next)) {
+          setOpts((o) => (o.letterOrder === 'sequence' && o.remember ? { ...o, startLetter: next } : o));
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [def.id, initial, account?.uid]);
+
+  /** Bookkeeping after a successful download/print. */
+  const afterOutput = async () => {
+    try {
+      if (def.id === 'packs') {
+        const w = await startWorkbook(String(opts.pack));
+        setToast(`“${w.title}” is in My workbooks on the home page – tick off each part as it's done!`);
+      }
+      const d = opts as DailyOpts;
+      if (def.id === 'daily' && d.letterOrder === 'sequence' && d.remember) {
+        const next = nextStartLetter(d);
+        await putRecord('progress', 'daily', { startLetter: next, updatedAt: Date.now() });
+        setOpts((o) => ({ ...o, startLetter: next }));
+        setToast(`Next time we'll start with the letter ${next}.`);
+      }
+    } catch (e) {
+      console.warn('Could not save progress', e);
+    }
+  };
+
   const dOpts = useDebounced(opts, 150);
   const dCommon = useDebounced(common, 150);
   const pages = useMemo(() => def.build(dOpts, PAPER[dCommon.paper]), [def, dOpts, dCommon.paper]);
@@ -104,6 +143,7 @@ export function Builder({ def, initial, common, setCommon }: Props) {
       track(kind === 'download' ? 'download_pdf' : 'print_pdf', { worksheet: def.id, pages: fresh.length });
       if (kind === 'download') await savePdf(pdf, def.fileName(opts));
       else await printPdf(pdf, def.fileName(opts));
+      await afterOutput();
     } catch (e) {
       console.error(e);
       alert('Sorry, something went wrong while making the PDF.');
@@ -124,6 +164,12 @@ export function Builder({ def, initial, common, setCommon }: Props) {
         <p className="panel-blurb">{def.blurb}</p>
 
         <OptionsForm fields={def.fields} values={opts} onChange={setOpts} />
+        {def.id === 'packs' && (
+          <p className="panel-note">
+            📒 Downloading adds this pack to <b>My workbooks</b> so you can tick off each part.{' '}
+            {account ? 'Progress is saved to your Google account.' : 'Sign in to keep progress on all your devices.'}
+          </p>
+        )}
 
         <details className="more" open>
           <summary>Page settings</summary>

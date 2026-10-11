@@ -16,6 +16,30 @@ service cloud.firestore {
         && request.resource.data.opts is string && request.resource.data.opts.size() <= 20000
         && request.resource.data.savedAt is number;
     }
+    // "My workbooks": progress through a downloaded pack
+    match /users/{uid}/workbooks/{pack} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['pack', 'title', 'icon', 'award', 'sections', 'done', 'startedAt', 'updatedAt'])
+        && request.resource.data.pack is string && request.resource.data.pack.size() <= 40
+        && request.resource.data.title is string && request.resource.data.title.size() <= 80
+        && request.resource.data.icon is string && request.resource.data.icon.size() <= 16
+        && request.resource.data.award is string && request.resource.data.award.size() <= 40
+        && request.resource.data.sections is string && request.resource.data.sections.size() <= 5000
+        && request.resource.data.done is list && request.resource.data.done.size() <= 40
+        && request.resource.data.startedAt is number
+        && request.resource.data.updatedAt is number;
+    }
+    // small progress markers, e.g. where Daily Practice should continue
+    match /users/{uid}/progress/{item} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['startLetter', 'updatedAt'])
+        && request.resource.data.startLetter is string && request.resource.data.startLetter.size() == 1
+        && request.resource.data.updatedAt is number;
+    }
     // everything else is closed
     match /{document=**} {
       allow read, write: if false;

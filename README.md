@@ -7,7 +7,7 @@ Pick a worksheet, choose what to practice, and download a print-ready **A4** (or
 | Worksheet | What's on the page |
 |---|---|
 | 📚 **Workbook Packs** | One PDF with a cover + contents: Alphabet A–Z, Numbers 0–20, Pre-K Starter, Kindergarten Week, Grade 1, Grade 2–3, Summer Fun – each ends with a certificate |
-| 📅 **Daily Practice** | A fresh page for any date: letter of the day, quick math, word of the day or pencil path, picture to color (1–7 days) |
+| 📅 **Daily Practice** | Letter of the day (A→Z from any letter, remembering where you stopped, or by calendar), quick math, word of the day or pencil path, picture to color; 1–7 days with a week cover/star chart and answer page |
 | 🏆 **Certificates & Charts** | Award certificates (Alphabet Star, Math Champion… or your own), weekly star charts, sticker charts |
 | ✏️ **ABC Tracing** | Model letter with numbered stroke-order arrows, arrows on traced letters, optional fading practice (dark → light → start dots), Classic or India picture words |
 | 📝 **Words & Names** | Names, custom words/sentences, Dolch sight words Pre-K → Grade 3 |
@@ -77,6 +77,9 @@ Before publishing you'll want app icons and splash screens (e.g. `npx @capacitor
 
 - **Sign in with Google** (top bar, website) uses Firebase Authentication, project `paperkid`.
 - **♡ Save** stores worksheet settings in Cloud Firestore at `users/{uid}/saved/{id}` when signed in, and in the browser otherwise. Things saved before signing in are moved into the account on first sign-in.
+- **My workbooks**: downloading a pack adds it to `users/{uid}/workbooks/{pack}` with a tick per part; when all parts are ticked a certificate button appears.
+- **Daily Practice** "remember where we stopped" keeps the next letter in `users/{uid}/progress/daily`.
+- Signed out, all of these are kept in the browser and moved into the account on sign-in.
 - Security rules live in `firestore.rules`: each user can only read/write their own `users/{uid}/saved` documents. Publish them in the Firebase console (**Firestore Database → Rules**) or with `npx firebase-tools deploy --only firestore:rules`.
 - The Firebase web config in `src/lib/firebase.ts` is public by design; the rules are what protect the data.
 - In the iOS/Android apps the sign-in button is hidden for now (Google's pop-up sign-in needs a native plugin there); saving works on the device.

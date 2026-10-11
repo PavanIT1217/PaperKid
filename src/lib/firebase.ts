@@ -124,3 +124,30 @@ export async function deleteRemote(uid: string, key: string) {
   const { app, fs } = await sdk();
   await fs.deleteDoc(fs.doc(fs.getFirestore(app), 'users', uid, 'saved', key));
 }
+
+// ---------------------------------------------------------------- generic per-user documents
+// users/{uid}/{collection}/{id}
+
+export async function getUserDoc(uid: string, coll: string, id: string): Promise<Record<string, unknown> | null> {
+  const { app, fs } = await sdk();
+  const snap = await fs.getDoc(fs.doc(fs.getFirestore(app), 'users', uid, coll, id));
+  return snap.exists() ? (snap.data() as Record<string, unknown>) : null;
+}
+
+export async function setUserDoc(uid: string, coll: string, id: string, data: Record<string, unknown>) {
+  const { app, fs } = await sdk();
+  await fs.setDoc(fs.doc(fs.getFirestore(app), 'users', uid, coll, id), data);
+}
+
+export async function deleteUserDoc(uid: string, coll: string, id: string) {
+  const { app, fs } = await sdk();
+  await fs.deleteDoc(fs.doc(fs.getFirestore(app), 'users', uid, coll, id));
+}
+
+export async function listUserDocs(uid: string, coll: string, order: string): Promise<{ id: string; data: Record<string, unknown> }[]> {
+  const { app, fs } = await sdk();
+  const snap = await fs.getDocs(fs.query(fs.collection(fs.getFirestore(app), 'users', uid, coll), fs.orderBy(order, 'desc')));
+  const out: { id: string; data: Record<string, unknown> }[] = [];
+  snap.forEach((d) => out.push({ id: d.id, data: d.data() as Record<string, unknown> }));
+  return out;
+}

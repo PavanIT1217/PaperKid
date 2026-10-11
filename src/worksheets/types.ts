@@ -11,11 +11,11 @@ export interface Paper {
 export type Category = 'packs' | 'writing' | 'reading' | 'math' | 'fun';
 
 export const CATEGORIES: { id: Category; title: string; blurb: string }[] = [
-  { id: 'packs', title: 'Packs, daily pages & rewards', blurb: 'Ready-made bundles, a fresh page every day, certificates and star charts.' },
   { id: 'writing', title: 'Handwriting', blurb: 'Letters, names, cursive, Indian scripts and pencil control.' },
   { id: 'reading', title: 'Reading & phonics', blurb: 'Sight-word sentences, letter sounds and alphabet games.' },
   { id: 'math', title: 'Math', blurb: 'Counting, sums, times tables, number sense, clocks and money.' },
   { id: 'fun', title: 'Puzzles & coloring', blurb: 'Mazes, dot-to-dot, patterns, shapes and coloring pages.' },
+  { id: 'packs', title: 'Packs, daily pages & rewards', blurb: 'Ready-made bundles, a fresh page every day, certificates and star charts.' },
 ];
 
 export interface Choice {

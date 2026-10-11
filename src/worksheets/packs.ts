@@ -1,6 +1,6 @@
 import { emoji, star, text, FONT_BODY, FONT_TITLE, INK, roundRect } from '../lib/draw';
-import { findWorksheet } from './index';
-import type { DrawPage, WorksheetDef } from './types';
+import { lookupWorksheet as findWorksheet } from './registry';
+import type { DrawPage, Paper, WorksheetDef } from './types';
 
 type Item = [worksheet: string, opts: Record<string, unknown>];
 
@@ -164,6 +164,29 @@ function coverPage(pack: Pack, contents: { title: string; icon: string; pages: n
   };
 }
 
+/** Pages and contents of a pack (without the cover). */
+export function buildPack(id: string, certificate: boolean, paper: Paper) {
+  const pack = PACKS[id] ?? PACKS.kweek;
+  const pages: DrawPage[] = [];
+  const contents: { title: string; icon: string; pages: number }[] = [];
+  for (const [wsId, opts] of pack.items) {
+    const ws = findWorksheet(wsId);
+    if (!ws) continue;
+    const built = ws.build({ ...ws.defaults, ...opts }, paper);
+    pages.push(...built);
+    contents.push({ title: ws.title, icon: ws.icon, pages: built.length });
+  }
+  if (certificate) {
+    const rw = findWorksheet('rewards');
+    if (rw) {
+      const built = rw.build({ ...rw.defaults, kind: 'certificate', award: pack.award }, paper);
+      pages.push(...built);
+      contents.push({ title: 'Certificate', icon: '🏆', pages: built.length });
+    }
+  }
+  return { pages, contents };
+}
+
 export const packs: WorksheetDef<PackOpts> = {
   id: 'packs',
   title: 'Workbook Packs',
@@ -181,23 +204,7 @@ export const packs: WorksheetDef<PackOpts> = {
   fileName: (o) => `PaperKid-pack-${o.pack}`,
   build(o, paper) {
     const pack = PACKS[o.pack] ?? PACKS.kweek;
-    const pages: DrawPage[] = [];
-    const contents: { title: string; icon: string; pages: number }[] = [];
-    for (const [id, opts] of pack.items) {
-      const ws = findWorksheet(id);
-      if (!ws) continue;
-      const built = ws.build({ ...ws.defaults, ...opts }, paper);
-      pages.push(...built);
-      contents.push({ title: ws.title, icon: ws.icon, pages: built.length });
-    }
-    if (o.certificate) {
-      const rw = findWorksheet('rewards');
-      if (rw) {
-        const built = rw.build({ ...rw.defaults, kind: 'certificate', award: pack.award }, paper);
-        pages.push(...built);
-        contents.push({ title: 'Certificate', icon: '🏆', pages: built.length });
-      }
-    }
+    const { pages, contents } = buildPack(o.pack, o.certificate, paper);
     return o.cover ? [coverPage(pack, contents), ...pages] : pages;
   },
 };
