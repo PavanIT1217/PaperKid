@@ -51,7 +51,7 @@ export const words: WorksheetDef<WordOpts> = {
   blurb: "Trace your child's name, spelling words or grade-level sight words.",
   grades: 'Pre-K – Grade 3',
   theme,
-  defaults: { source: 'custom', custom: 'Emma\nI love you\ncat\ndog', rowsPerWord: 2, size: 'medium' },
+  defaults: { source: 'custom', custom: 'I can read!\nsun\ncat\nThe dog can run.', rowsPerWord: 2, size: 'medium' },
   fields: [
     {
       type: 'select',

@@ -114,7 +114,7 @@ export const GLYPHS: Record<string, Glyph> = {
   "'": G(6, ['M3,0 L3,22']),
 };
 
-export const SPACE_WIDTH = 34;
+export const SPACE_WIDTH = 52;
 export const LETTER_GAP = 16;
 
 export function hasGlyph(ch: string): boolean {
