@@ -1,7 +1,8 @@
 import { card, emoji, footer, guideLines, header, line, mulberry32, practiceRow, roundRect, setTraceStyle, text, FONT_BODY, FONT_TITLE, INK, type Ctx, type PageInfo } from '../lib/draw';
 import { measureText } from '../lib/glyphs';
 import { drawPicture, PICTURES } from './coloring';
-import { ALPHABET, LETTER_WORDS } from './letters';
+import { countryOf } from '../lib/country';
+import { ALPHABET, pictureWords } from './letters';
 import { patternPath } from './lines';
 import { makeProblem, type MathOpts } from './math';
 import type { DrawPage, WorksheetDef } from './types';
@@ -96,7 +97,7 @@ export function nextStartLetter(o: DailyOpts): string {
   return ALPHABET[(startIdx + Math.max(1, Math.min(7, o.days | 0))) % 26];
 }
 
-const longDate = (d: Date) => d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+const longDate = (d: Date, locale: string) => d.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 const opSym = (op: string) => (op === '-' ? '−' : op);
 const young = (l: Level) => l === 'prek' || l === 'k';
 
@@ -104,9 +105,15 @@ function sectionTitle(ctx: Ctx, p: PageInfo, s: string, x: number, y: number) {
   text(ctx, s, x, y, 4.6, { font: FONT_TITLE, weight: 600, color: p.inkSaver ? INK : theme.ink });
 }
 
-function dayPage(d: Day, o: DailyOpts): DrawPage {
+interface Loc {
+  locale: string;
+  words: Record<string, [string, string]>;
+}
+
+function dayPage(d: Day, o: DailyOpts, loc: Loc): DrawPage {
+  const { locale } = loc;
   return (ctx, p) => {
-    const top = header(ctx, p, theme, 'Daily Practice', longDate(d.date), '📅');
+    const top = header(ctx, p, theme, 'Daily Practice', longDate(d.date, locale), '📅');
     const { W, H, margin: m } = p;
     const cw = W - 2 * m;
     const gap = 5;
@@ -117,7 +124,7 @@ function dayPage(d: Day, o: DailyOpts): DrawPage {
 
     // 1. letter of the day
     const L = d.letter;
-    const [word, pic] = LETTER_WORDS[L];
+    const [word, pic] = loc.words[L];
     card(ctx, m, top, cw, h1, theme, p.inkSaver);
     sectionTitle(ctx, p, '1  Letter of the day', m + 5, top + 7);
     emoji(ctx, pic, W - m - 12, top + 10, 11);
@@ -186,11 +193,12 @@ function dayPage(d: Day, o: DailyOpts): DrawPage {
 }
 
 /** Week cover: what's coming each day + a star to color for every part. */
-function coverPage(days: Day[], o: DailyOpts): DrawPage {
+function coverPage(days: Day[], o: DailyOpts, loc: Loc): DrawPage {
+  const { locale } = loc;
   return (ctx, p) => {
     const first = days[0].date;
     const last = days[days.length - 1].date;
-    const range = `${first.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} – ${last.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+    const range = `${first.toLocaleDateString(locale, { day: 'numeric', month: 'short' })} – ${last.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })}`;
     const top = header(ctx, p, theme, p.childName ? `${p.childName}'s practice week` : 'My practice week', range, '🗓️');
     const { W, H, margin: m } = p;
     const cols = ['Letter', 'Math', 'Color', young(o.level) ? 'Path' : 'Word'];
@@ -214,12 +222,12 @@ function coverPage(days: Day[], o: DailyOpts): DrawPage {
       ctx.lineWidth = 0.3;
       line(ctx, m, y + rh, W - m, y + rh);
       ctx.restore();
-      text(ctx, d.date.toLocaleDateString('en-GB', { weekday: 'long' }), m + 1, y + rh / 2 - 0.5, 5, { font: FONT_TITLE, weight: 600 });
-      text(ctx, `${d.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} · letter ${d.letter}`, m + 1, y + rh / 2 + 5, 3.8, {
+      text(ctx, d.date.toLocaleDateString(locale, { weekday: 'long' }), m + 1, y + rh / 2 - 0.5, 5, { font: FONT_TITLE, weight: 600 });
+      text(ctx, `${d.date.toLocaleDateString(locale, { day: 'numeric', month: 'short' })} · letter ${d.letter}`, m + 1, y + rh / 2 + 5, 3.8, {
         font: FONT_BODY,
         color: '#5c6378',
       });
-      emoji(ctx, LETTER_WORDS[d.letter][1], m + firstW - 8, y + rh / 2, 8);
+      emoji(ctx, loc.words[d.letter][1], m + firstW - 8, y + rh / 2, 8);
       cols.forEach((_, i) => {
         const cx = m + firstW + i * cw + cw / 2;
         const cy = y + rh / 2;
@@ -253,14 +261,15 @@ function coverPage(days: Day[], o: DailyOpts): DrawPage {
   };
 }
 
-function answerPage(days: Day[]): DrawPage {
+function answerPage(days: Day[], loc: Loc): DrawPage {
+  const { locale } = loc;
   return (ctx, p) => {
     const top = header(ctx, p, theme, 'Daily Practice – answers', 'Quick math answers for each day', '✅');
     const { W, H, margin: m } = p;
     const rh = Math.min(34, (H - m - 8 - top) / days.length);
     days.forEach((d, r) => {
       const y = top + r * rh;
-      text(ctx, longDate(d.date), m, y + 5, 4.4, { font: FONT_TITLE, weight: 600, color: p.inkSaver ? INK : theme.ink });
+      text(ctx, longDate(d.date, locale), m, y + 5, 4.4, { font: FONT_TITLE, weight: 600, color: p.inkSaver ? INK : theme.ink });
       d.problems.forEach((q, k) => {
         const x = m + (k % 3) * ((W - 2 * m) / 3);
         const yy = y + 13 + Math.floor(k / 3) * 9;
@@ -333,11 +342,12 @@ export const daily: WorksheetDef<DailyOpts> = {
     { type: 'toggle', key: 'answerKey', label: 'Add math answer page' },
   ],
   fileName: (o) => `PaperKid-daily-${o.date || 'today'}${Number(o.days) > 1 ? `-${o.days}days` : ''}`,
-  build(o) {
+  build(o, paper) {
+    const loc: Loc = { locale: countryOf(paper.country).locale, words: pictureWords(paper.country) };
     const days = plan(o);
-    const pages = days.map((d) => dayPage(d, o));
-    if (o.cover && days.length > 1) pages.unshift(coverPage(days, o));
-    if (o.answerKey) pages.push(answerPage(days));
+    const pages = days.map((d) => dayPage(d, o, loc));
+    if (o.cover && days.length > 1) pages.unshift(coverPage(days, o, loc));
+    if (o.answerKey) pages.push(answerPage(days, loc));
     return pages;
   },
 };

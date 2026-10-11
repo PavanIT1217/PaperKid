@@ -40,16 +40,16 @@ const theme = { main: '#ff8a3d', soft: '#ffe9d9', ink: '#a34a12' };
 
 export const scripts: WorksheetDef<ScriptOpts> = {
   id: 'scripts',
-  title: 'Hindi & Telugu Letters',
-  icon: '🪔',
-  blurb: 'Trace the vowels and consonants of Hindi (Devanagari) and Telugu, one letter at a time.',
+  title: 'More Alphabets',
+  icon: '🌏',
+  blurb: 'Trace the letters of other writing systems, one letter at a time. Pick a language to start.',
   grades: 'Pre-K – Grade 2',
   category: 'writing',
   theme,
   defaults: { script: 'hindi', set: 'vowels', layout: 'grid' },
   fields: [
     {
-      type: 'segmented',
+      type: 'select',
       key: 'script',
       label: 'Language',
       options: Object.entries(SCRIPTS).map(([value, s]) => ({ value, label: s.name })),
@@ -85,7 +85,7 @@ export const scripts: WorksheetDef<ScriptOpts> = {
     for (let i = 0; i < letters.length; i += per) {
       const chunk = letters.slice(i, i + per);
       pages.push((ctx, p) => {
-        const top = header(ctx, p, theme, `Let's write ${sc.name.split(' ')[0]}`, 'Trace the grey letters, then write them on your own.', '🪔');
+        const top = header(ctx, p, theme, `Let's write ${sc.name.split(' ')[0]}`, 'Trace the grey letters, then write them on your own.', '🌏');
         if (per === 1) {
           const l = chunk[0];
           const heroH = 70;

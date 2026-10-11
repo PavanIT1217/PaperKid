@@ -1058,3 +1058,46 @@ a {
     grid-template-columns: 1fr;
   }
 }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.country-select select {
+  max-width: 170px;
+}
+
+@media (max-width: 520px) {
+  .country-select select {
+    max-width: 64px;
+  }
+  .topbar-right {
+    gap: 6px;
+  }
+  .brand {
+    font-size: 21px;
+  }
+}
+
+@media (max-width: 380px) {
+  .topbar {
+    padding-left: 10px;
+    padding-right: 10px;
+    gap: 6px;
+  }
+  .brand-mark {
+    display: none;
+  }
+  .paper-select select {
+    padding: 6px 4px;
+    max-width: 72px;
+  }
+  .country-select select {
+    max-width: 56px;
+  }
+}

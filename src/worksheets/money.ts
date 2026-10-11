@@ -1,8 +1,9 @@
+import { countryOf } from '../lib/country';
 import { footer, header, mulberry32, roundRect, text, FONT_BODY, FONT_TITLE, INK, type Ctx } from '../lib/draw';
 import type { DrawPage, WorksheetDef } from './types';
 
 interface Denom {
-  value: number; // smallest unit (paise, cents, pence) – INR uses rupees
+  value: number; // smallest unit (cents, pence); rupees are counted whole
   label: string;
   kind: 'coin' | 'note';
   tint: string;
@@ -52,6 +53,33 @@ const CURRENCIES: Record<string, { name: string; denoms: Denom[]; format: (v: nu
       { value: 50, label: '50p', kind: 'coin', tint: SILVER, size: 0.95 },
       { value: 100, label: '£1', kind: 'coin', tint: GOLD, size: 0.92 },
       { value: 200, label: '£2', kind: 'coin', tint: GOLD, size: 1 },
+    ],
+  },
+  AUD: {
+    name: 'Australian Dollar (A$)',
+    format: (v) => (v < 100 ? `${v}c` : `$${(v / 100).toFixed(2)}`),
+    denoms: [
+      { value: 5, label: '5c', kind: 'coin', tint: SILVER, size: 0.72 },
+      { value: 10, label: '10c', kind: 'coin', tint: SILVER, size: 0.8 },
+      { value: 20, label: '20c', kind: 'coin', tint: SILVER, size: 0.92 },
+      { value: 50, label: '50c', kind: 'coin', tint: SILVER, size: 1 },
+      { value: 100, label: '$1', kind: 'coin', tint: GOLD, size: 0.85 },
+      { value: 200, label: '$2', kind: 'coin', tint: GOLD, size: 0.75 },
+      { value: 500, label: '$5', kind: 'note', tint: '#f3dcef', size: 1 },
+      { value: 1000, label: '$10', kind: 'note', tint: '#d9e6fb', size: 1 },
+    ],
+  },
+  CAD: {
+    name: 'Canadian Dollar (C$)',
+    format: (v) => (v < 100 ? `${v}¢` : `$${(v / 100).toFixed(2)}`),
+    denoms: [
+      { value: 5, label: '5¢', kind: 'coin', tint: SILVER, size: 0.8 },
+      { value: 10, label: '10¢', kind: 'coin', tint: SILVER, size: 0.7 },
+      { value: 25, label: '25¢', kind: 'coin', tint: SILVER, size: 0.88 },
+      { value: 100, label: '$1', kind: 'coin', tint: GOLD, size: 0.94 },
+      { value: 200, label: '$2', kind: 'coin', tint: SILVER, size: 1 },
+      { value: 500, label: '$5', kind: 'note', tint: '#d9e6fb', size: 1 },
+      { value: 1000, label: '$10', kind: 'note', tint: '#eadcf5', size: 1 },
     ],
   },
   EUR: {
@@ -107,7 +135,7 @@ function drawDenom(ctx: Ctx, d: Denom, x: number, cy: number, unit: number, inkS
 }
 
 type MoneyOpts = {
-  currency: keyof typeof CURRENCIES;
+  currency: 'auto' | keyof typeof CURRENCIES;
   level: 'small' | 'medium' | 'big';
   notes: boolean;
   pages: number;
@@ -125,9 +153,14 @@ export const money: WorksheetDef<MoneyOpts> = {
   grades: 'Grade 1 – Grade 3',
   category: 'math',
   theme,
-  defaults: { currency: 'INR', level: 'small', notes: true, pages: 1, answerKey: true, seed: 9 },
+  defaults: { currency: 'auto', level: 'small', notes: true, pages: 1, answerKey: true, seed: 9 },
   fields: [
-    { type: 'select', key: 'currency', label: 'Currency', options: Object.entries(CURRENCIES).map(([value, c]) => ({ value, label: c.name })) },
+    {
+      type: 'select',
+      key: 'currency',
+      label: 'Currency',
+      options: [{ value: 'auto', label: 'My country’s money' }, ...Object.entries(CURRENCIES).map(([value, c]) => ({ value, label: c.name }))],
+    },
     {
       type: 'segmented',
       key: 'level',
@@ -143,9 +176,10 @@ export const money: WorksheetDef<MoneyOpts> = {
     { type: 'toggle', key: 'answerKey', label: 'Add answer key pages' },
     { type: 'reroll', key: 'seed', label: 'New problems' },
   ],
-  fileName: (o) => `PaperKid-money-${o.currency}`,
-  build(o) {
-    const cur = CURRENCIES[o.currency] ?? CURRENCIES.INR;
+  fileName: () => 'PaperKid-money',
+  build(o, paper) {
+    const code = o.currency === 'auto' ? countryOf(paper.country).currency : o.currency;
+    const cur = CURRENCIES[code] ?? CURRENCIES.USD;
     const rand = mulberry32(o.seed);
     const pool = cur.denoms.filter((d) => o.notes || d.kind === 'coin');
     // limit to the smaller denominations for easier levels

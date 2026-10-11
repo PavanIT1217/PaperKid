@@ -4,7 +4,7 @@ import { track } from '../lib/analytics';
 import { getRecord, putRecord } from '../lib/userdata';
 import { startWorkbook } from '../lib/workbooks';
 import { nextStartLetter, type DailyOpts } from '../worksheets/daily';
-import { buildPdf, pageInfo, PAPER, printPdf, savePdf, type CommonOptions } from '../lib/render';
+import { buildPdf, type CommonOptions, pageInfo, paperFor, printPdf, savePdf } from '../lib/render';
 import { addSaved } from '../lib/saved';
 import { shareUrl } from '../lib/share';
 import { load, save } from '../lib/storage';
@@ -131,14 +131,14 @@ export function Builder({ def, initial, common, setCommon }: Props) {
 
   const dOpts = useDebounced(opts, 150);
   const dCommon = useDebounced(common, 150);
-  const pages = useMemo(() => def.build(dOpts, PAPER[dCommon.paper]), [def, dOpts, dCommon.paper]);
+  const pages = useMemo(() => def.build(dOpts, paperFor(dCommon)), [def, dOpts, dCommon.paper, dCommon.country]);
   const infos = useMemo(() => pages.map((_, i) => pageInfo(dCommon, i, pages.length)), [pages, dCommon]);
 
   const run = async (kind: 'download' | 'print') => {
     if (!pages.length || busy) return;
     setBusy('Preparing…');
     try {
-      const fresh = def.build(opts, PAPER[common.paper]);
+      const fresh = def.build(opts, paperFor(common));
       const pdf = await buildPdf(fresh, common, (n) => setBusy(`Page ${n} of ${fresh.length}…`));
       track(kind === 'download' ? 'download_pdf' : 'print_pdf', { worksheet: def.id, pages: fresh.length });
       if (kind === 'download') await savePdf(pdf, def.fileName(opts));
