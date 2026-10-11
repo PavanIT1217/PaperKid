@@ -1,4 +1,4 @@
-import { card, emoji, footer, glyphText, guideLines, header, practiceRow, text, FONT_TITLE } from '../lib/draw';
+import { card, emoji, fadeStyle, footer, glyphText, guideLines, header, practiceRow, text, FONT_TITLE } from '../lib/draw';
 import { measureText } from '../lib/glyphs';
 import { capFor, fitRows, SIZE_FIELD, type DrawPage, type WorksheetDef } from './types';
 
@@ -33,11 +33,44 @@ export const LETTER_WORDS: Record<string, [string, string]> = {
   Z: ['Zebra', '🦓'],
 };
 
+/** Picture words familiar to children in India. */
+export const INDIA_WORDS: Record<string, [string, string]> = {
+  A: ['Apple', '🍎'],
+  B: ['Banana', '🍌'],
+  C: ['Coconut', '🥥'],
+  D: ['Drum', '🥁'],
+  E: ['Elephant', '🐘'],
+  F: ['Flag', '🇮🇳'],
+  G: ['Grapes', '🍇'],
+  H: ['Hen', '🐔'],
+  I: ['Ice cream', '🍦'],
+  J: ['Jug', '🫖'],
+  K: ['Kite', '🪁'],
+  L: ['Lotus', '🪷'],
+  M: ['Mango', '🥭'],
+  N: ['Nest', '🪺'],
+  O: ['Owl', '🦉'],
+  P: ['Peacock', '🦚'],
+  Q: ['Queen', '👸'],
+  R: ['Rickshaw', '🛺'],
+  S: ['Sari', '🥻'],
+  T: ['Tiger', '🐅'],
+  U: ['Umbrella', '☂️'],
+  V: ['Van', '🚐'],
+  W: ['Watermelon', '🍉'],
+  X: ['Fox', '🦊'],
+  Y: ['Yo-yo', '🪀'],
+  Z: ['Zebra', '🦓'],
+};
+
 type LetterOpts = {
   letters: string[];
   letterCase: 'both' | 'upper' | 'lower';
   size: 'large' | 'medium' | 'small';
   picture: boolean;
+  wordSet: 'classic' | 'india';
+  hints: boolean;
+  fade: boolean;
 };
 
 const theme = { main: '#ff8a3d', soft: '#ffe9d9', ink: '#a34a12' };
@@ -48,8 +81,9 @@ export const letters: WorksheetDef<LetterOpts> = {
   icon: '✏️',
   blurb: 'One page per letter with stroke-order arrows, dotted letters to trace and a picture word.',
   grades: 'Pre-K – Grade 1',
+  category: 'writing',
   theme,
-  defaults: { letters: ['A', 'B', 'C'], letterCase: 'both', size: 'large', picture: true },
+  defaults: { letters: ['A', 'B', 'C'], letterCase: 'both', size: 'large', picture: true, wordSet: 'classic', hints: true, fade: false },
   fields: [
     {
       type: 'chips',
@@ -70,13 +104,25 @@ export const letters: WorksheetDef<LetterOpts> = {
     },
     SIZE_FIELD,
     { type: 'toggle', key: 'picture', label: 'Picture word (A is for Apple)' },
+    {
+      type: 'segmented',
+      key: 'wordSet',
+      label: 'Picture words',
+      options: [
+        { value: 'classic', label: 'Classic' },
+        { value: 'india', label: 'India 🇮🇳' },
+      ],
+      when: (o) => Boolean(o.picture),
+    },
+    { type: 'toggle', key: 'hints', label: 'Arrows on traced letters' },
+    { type: 'toggle', key: 'fade', label: 'Fade the dots row by row', hint: 'Dark dots → light dots → start dots only' },
   ],
   fileName: (o) => `PaperKid-letters-${o.letters.length === 26 ? 'A-Z' : o.letters.join('')}`,
   build(o) {
     const list = ALPHABET.filter((l) => o.letters.includes(l));
     return list.map((L): DrawPage => (ctx, p) => {
       const l = L.toLowerCase();
-      const [word, pic] = LETTER_WORDS[L];
+      const [word, pic] = (o.wordSet === 'india' ? INDIA_WORDS : LETTER_WORDS)[L];
       const shown = o.letterCase === 'both' ? `${L} ${l}` : o.letterCase === 'upper' ? L : l;
       const top = header(ctx, p, theme, `Let's write ${shown.replace(' ', ' and ')}`, 'Start at the green dot and follow the arrows.', pic);
       const { W, H, margin: m } = p;
@@ -97,7 +143,7 @@ export const letters: WorksheetDef<LetterOpts> = {
       if (o.picture) {
         const px = m + 6 + gl + (cw - gl - 6) / 2;
         emoji(ctx, pic, px, top + 15, 18);
-        const label = L === 'X' ? 'x is in fox' : `${L} is for ${word}`;
+        const label = word === 'Fox' ? 'x is in fox' : `${L} is for ${word}`;
         text(ctx, label, px, top + 31, 5.5, { font: FONT_TITLE, weight: 600, align: 'center', color: p.inkSaver ? '#2b2d42' : theme.ink });
         const wcap = Math.min(10, ((cw - gl - 16) / measureText(word)) * 100);
         const ww = (measureText(word) * wcap) / 100;
@@ -109,21 +155,18 @@ export const letters: WorksheetDef<LetterOpts> = {
       const cap = capFor(o.size);
       let y = top + heroH + 8;
       const { rows, pitch } = fitRows(y, H - m - 6, cap);
-      const seq: { s: string; mode: 'model' | 'trace' | 'free' }[] = [];
       const forms = o.letterCase === 'both' ? [L, l] : o.letterCase === 'upper' ? [L] : [l];
       const practice = Math.max(forms.length, rows - 1);
-      for (let i = 0; i < practice; i++) {
-        const f = forms[Math.floor((i * forms.length) / practice)];
-        const firstOfForm = i === 0 || forms[Math.floor(((i - 1) * forms.length) / practice)] !== f;
-        seq.push({ s: f, mode: firstOfForm ? 'model' : 'trace' });
-      }
-      if (rows > practice) seq.push({ s: forms[forms.length - 1], mode: 'free' });
-
-      for (const r of seq.slice(0, rows)) {
-        if (r.mode === 'free') practiceRow(ctx, r.s, m, y, cw, cap, { first: 'solid', traceCount: 1 });
-        else practiceRow(ctx, r.s, m, y, cw, cap, { first: r.mode === 'model' ? 'solid' : 'trace' });
-        y += pitch;
-      }
+      // rows per form, e.g. 5 practice rows with Aa → 3 × A, 2 × a
+      const perForm = forms.map((_, fi) => Math.floor(((fi + 1) * practice) / forms.length) - Math.floor((fi * practice) / forms.length));
+      forms.forEach((f, fi) => {
+        for (let j = 0; j < perForm[fi]; j++) {
+          const ts = o.fade ? fadeStyle(j, perForm[fi]) : 'trace';
+          practiceRow(ctx, f, m, y, cw, cap, { first: j === 0 ? 'solid' : ts, traceStyle: ts, hintFirst: o.hints });
+          y += pitch;
+        }
+      });
+      if (rows > practice) practiceRow(ctx, forms[forms.length - 1], m, y, cw, cap, { first: 'solid', traceCount: o.fade ? 0 : 1 });
       footer(ctx, p, theme, 'Trace the dotted letters, then try on your own!');
     });
   },

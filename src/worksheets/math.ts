@@ -9,7 +9,7 @@ interface Problem {
   ans: number;
 }
 
-type MathOpts = {
+export type MathOpts = {
   operation: 'add' | 'sub' | 'addsub' | 'mul' | 'div' | 'muldiv' | 'all';
   level: 'within5' | 'within10' | 'within20' | '2digit' | '3digit';
   tables: 'upto5' | 'upto10' | 'upto12';
@@ -27,7 +27,7 @@ function maxFor(level: MathOpts['level']): number {
   return { within5: 5, within10: 10, within20: 20, '2digit': 99, '3digit': 999 }[level];
 }
 
-function makeProblem(o: MathOpts, rand: () => number): Problem {
+export function makeProblem(o: MathOpts, rand: () => number): Problem {
   const ri = (lo: number, hi: number) => lo + Math.floor(rand() * (hi - lo + 1));
   const ops: Op[] =
     o.operation === 'add' ? ['+'] :
@@ -241,6 +241,7 @@ export const math: WorksheetDef<MathOpts> = {
   icon: '➕',
   blurb: 'Picture sums for little ones up to 3-digit and times tables. Fresh problems every time, with answer keys.',
   grades: 'K – Grade 3',
+  category: 'math',
   theme,
   defaults: { operation: 'add', level: 'within10', tables: 'upto10', layout: 'vertical', perPage: 20, pages: 1, answerKey: true, seed: 7 },
   fields: [

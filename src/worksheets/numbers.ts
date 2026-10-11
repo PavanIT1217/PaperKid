@@ -1,4 +1,4 @@
-import { card, emoji, footer, glyphText, guideLines, header, practiceRow, roundRect, text, FONT_TITLE, INK } from '../lib/draw';
+import { card, emoji, fadeStyle, footer, glyphText, guideLines, header, practiceRow, roundRect, text, FONT_TITLE, INK } from '../lib/draw';
 import { measureText } from '../lib/glyphs';
 import { capFor, fitRows, SIZE_FIELD, type DrawPage, type WorksheetDef } from './types';
 
@@ -15,6 +15,8 @@ type NumberOpts = {
   size: 'large' | 'medium' | 'small';
   counting: 'color' | 'pictures' | 'none';
   word: boolean;
+  hints: boolean;
+  fade: boolean;
 };
 
 const theme = { main: '#4f8ff7', soft: '#e1ecff', ink: '#1d4fa8' };
@@ -40,8 +42,9 @@ export const numbers: WorksheetDef<NumberOpts> = {
   icon: '🔢',
   blurb: 'Trace numbers 0–20 with ten frames, counting pictures and the number word.',
   grades: 'Pre-K – Grade 1',
+  category: 'math',
   theme,
-  defaults: { from: 1, to: 10, size: 'large', counting: 'pictures', word: true },
+  defaults: { from: 1, to: 10, size: 'large', counting: 'pictures', word: true, hints: true, fade: false },
   fields: [
     { type: 'number', key: 'from', label: 'From', min: 0, max: 20 },
     { type: 'number', key: 'to', label: 'To', min: 0, max: 20 },
@@ -57,6 +60,8 @@ export const numbers: WorksheetDef<NumberOpts> = {
       ],
     },
     { type: 'toggle', key: 'word', label: 'Trace the number word' },
+    { type: 'toggle', key: 'hints', label: 'Arrows on traced numbers' },
+    { type: 'toggle', key: 'fade', label: 'Fade the dots row by row', hint: 'Dark dots → light dots → start dots only' },
   ],
   fileName: (o) => `PaperKid-numbers-${Math.min(o.from, o.to)}-${Math.max(o.from, o.to)}`,
   build(o) {
@@ -107,7 +112,14 @@ export const numbers: WorksheetDef<NumberOpts> = {
         const { rows, pitch } = fitRows(y, H - m - 6, cap, cap * 1.1);
         for (let r = 0; r < rows; r++) {
           const last = r === rows - 1 && rows > 2;
-          practiceRow(ctx, s, m, y, cw, cap, { first: r === 0 ? 'solid' : 'trace', traceCount: last ? 1 : undefined, descender: false });
+          const ts = o.fade ? fadeStyle(r, rows) : 'trace';
+          practiceRow(ctx, s, m, y, cw, cap, {
+            first: r === 0 ? 'solid' : ts,
+            traceStyle: ts,
+            hintFirst: o.hints,
+            traceCount: last && !o.fade ? 1 : undefined,
+            descender: false,
+          });
           y += pitch;
         }
         footer(ctx, p, theme, `${n} – ${NUMBER_WORDS[n]}`);

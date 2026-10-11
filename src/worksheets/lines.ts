@@ -28,7 +28,7 @@ const PAIRS: [string, string][] = [
 ];
 
 /** Draws pattern `name` between x0..x1, vertically centered on cy with half-height a. */
-function patternPath(ctx: Ctx, name: string, x0: number, x1: number, cy: number, a: number): [number, number] {
+export function patternPath(ctx: Ctx, name: string, x0: number, x1: number, cy: number, a: number): [number, number] {
   const w = x1 - x0;
   let start: [number, number] | null = null;
   const mv = (x: number, y: number) => {
@@ -138,6 +138,7 @@ export const lines: WorksheetDef<LineOpts> = {
   icon: '〰️',
   blurb: 'Help the bee reach the flower! Dotted lines, waves, zigzags and loops build pencil control.',
   grades: 'Toddler – K',
+  category: 'writing',
   theme,
   defaults: { patterns: PATTERNS.map((p) => p.value), repeat: 1 },
   fields: [

@@ -25,6 +25,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+        env:
+          # Optional: set a repository variable GA_ID (e.g. G-XXXXXXX) to turn on Google Analytics
+          VITE_GA_ID: ${{ vars.GA_ID }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

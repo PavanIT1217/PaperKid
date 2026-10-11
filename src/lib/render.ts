@@ -18,9 +18,11 @@ export const PAPER: Record<PaperSize, Paper> = {
 
 let fontsReady: Promise<unknown> | null = null;
 export function ensureFonts(): Promise<unknown> {
-  fontsReady ??= Promise.all(
-    ['400 16px Andika', '700 16px Andika', '500 16px Fredoka', '600 16px Fredoka'].map((f) => document.fonts.load(f)),
-  ).catch(() => undefined);
+  fontsReady ??= Promise.all([
+    ...['400 16px Andika', '700 16px Andika', '500 16px Fredoka', '600 16px Fredoka', '400 16px "Playwrite US Trad"'].map((f) => document.fonts.load(f)),
+    document.fonts.load('500 16px "Noto Sans Devanagari"', 'क'),
+    document.fonts.load('500 16px "Noto Sans Telugu"', 'క'),
+  ]).catch(() => undefined);
   return fontsReady;
 }
 

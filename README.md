@@ -6,13 +6,27 @@ Pick a worksheet, choose what to practice, and download a print-ready **A4** (or
 
 | Worksheet | What's on the page |
 |---|---|
-| ✏️ **ABC Tracing** | One page per letter: big model letter with numbered stroke-order arrows, dotted letters on handwriting lines, "A is for Apple" picture word, free-writing row |
-| 🔢 **Number Tracing** | Numbers 0–20 with ten frames (count pictures or color boxes) and the number word to trace |
-| 📝 **Words & Names** | Your child's name, any custom words/sentences, or Dolch sight-word lists (Pre-K → Grade 3) |
-| ➕ **Math Practice** | Picture math, addition, subtraction, multiplication, division; within 5/10/20, 2- and 3-digit; column or in-line; answer keys; "New problems" button |
-| 🔷 **Shapes** | 12 shapes to trace in rows, or big trace-and-color pages |
-| 〰️ **Pre-writing Lines** | Help the bee reach the flower: straight, zigzag, waves, rainbows, castles, loops… |
-| 🖍️ **Coloring Pages** | 13 bold line-art pictures with the word to trace underneath |
+| 📚 **Workbook Packs** | One PDF with a cover + contents: Alphabet A–Z, Numbers 0–20, Pre-K Starter, Kindergarten Week, Grade 1, Grade 2–3, Summer Fun – each ends with a certificate |
+| 📅 **Daily Practice** | A fresh page for any date: letter of the day, quick math, word of the day or pencil path, picture to color (1–7 days) |
+| 🏆 **Certificates & Charts** | Award certificates (Alphabet Star, Math Champion… or your own), weekly star charts, sticker charts |
+| ✏️ **ABC Tracing** | Model letter with numbered stroke-order arrows, arrows on traced letters, optional fading practice (dark → light → start dots), Classic or India picture words |
+| 📝 **Words & Names** | Names, custom words/sentences, Dolch sight words Pre-K → Grade 3 |
+| 🖋️ **Cursive Writing** | Joined-up letters and words (Playwrite US Trad school font) |
+| 🪔 **Hindi & Telugu Letters** | Vowels and consonants, 6 per page or one big letter per page |
+| 〰️ **Pre-writing Lines** | Waves, zigzags, loops… from a picture to a picture |
+| 📖 **I Can Read!** | Sight-word sentence + line-art picture to color + trace + write |
+| 🔤 **ABC Games** | Beginning sounds, missing letters, match upper/lower case |
+| 🔢 **Number Tracing** | 0–20 with ten frames and number words |
+| ➕ **Math Practice** | Picture math → 3-digit, times tables, division, answer keys |
+| 💯 **Number Sense** | Number bonds, 100 chart, odd/even, skip counting, before/after/between, greater/less |
+| 🕒 **Telling Time** | Read or draw clock hands: hours → any minute |
+| 🪙 **Counting Money** | ₹ rupees, $ dollars, £ pounds, € euros |
+| 🌀 **Mazes** | Easy → expert, fresh every time, answer pages |
+| ✨ **Dot-to-Dot** | Numbers, letters or skip counting (2s, 5s, 10s) |
+| 🧩 **What Comes Next?** | AB, AAB, ABC… picture patterns |
+| 🔷 **Shapes** / 🖍️ **Coloring Pages** | Trace shapes; 13 bold line-art pictures |
+
+Also: **share links** (settings travel in the URL – great for teachers), **♡ Save** worksheets to "My saved worksheets" on this device, installable web app (manifest + icons).
 
 Page options: child's name printed on the page, name/date line, ink-saver mode, A4 or US Letter.
 
@@ -59,8 +73,26 @@ From Android Studio: *Build → Generate Signed App Bundle* → upload the `.aab
 From Xcode: set your Team & bundle id (`com.webappslab.paperkid` in `capacitor.config.ts`), *Product → Archive* → upload to App Store Connect.
 Before publishing you'll want app icons and splash screens (e.g. `npx @capacitor/assets generate`).
 
+## Sign-in & saved worksheets (Firebase)
+
+- **Sign in with Google** (top bar, website) uses Firebase Authentication, project `paperkid`.
+- **♡ Save** stores worksheet settings in Cloud Firestore at `users/{uid}/saved/{id}` when signed in, and in the browser otherwise. Things saved before signing in are moved into the account on first sign-in.
+- Security rules live in `firestore.rules`: each user can only read/write their own `users/{uid}/saved` documents. Publish them in the Firebase console (**Firestore Database → Rules**) or with `npx firebase-tools deploy --only firestore:rules`.
+- The Firebase web config in `src/lib/firebase.ts` is public by design; the rules are what protect the data.
+- In the iOS/Android apps the sign-in button is hidden for now (Google's pop-up sign-in needs a native plugin there); saving works on the device.
+
+## Analytics (optional)
+
+The site can send anonymous Google Analytics 4 events (page views, PDF downloads/prints, share links, saves).
+Create a GA4 property, then in GitHub: **Settings → Secrets and variables → Actions → Variables → New variable** `GA_ID` = `G-XXXXXXX`, and re-run the deploy. Without it nothing is loaded.
+
+## App icon, splash & store screenshots
+
+- Source art: `assets/icon-only.png`, `icon-foreground.png`, `icon-background.png`, `splash.png`, `splash-dark.png`.
+- Regenerate native icons/splash: `npx capacitor-assets generate --iconBackgroundColor '#ff8a3d' --splashBackgroundColor '#fff8f0' --splashBackgroundColorDark '#1f2133'` (then move the generated `icons/` folder into `public/`).
+- Store screenshots: `store/screenshots/ios-*.png` (1290 × 2796, iPhone 6.7") and `android-*.png` (1080 × 2400).
+
 ## Ideas for next steps
 
-- Google sign-in to save favourite worksheets and children's profiles
-- Cursive handwriting, mazes, dot-to-dot, cut-and-paste, telling time, money
-- More languages / alphabets
+- Google sign-in inside the native apps, child profiles and progress tracking
+- More scripts (Tamil, Kannada…), cut-and-paste activities, word searches
