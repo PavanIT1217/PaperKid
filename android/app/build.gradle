@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "com.paperkid.app"
+    namespace = "com.webappslab.paperkid"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.paperkid.app"
+        applicationId "com.webappslab.paperkid"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

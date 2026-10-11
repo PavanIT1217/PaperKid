@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.paperkid.app',
+  appId: 'com.webappslab.paperkid',
   appName: 'PaperKid',
   webDir: 'dist',
 };
