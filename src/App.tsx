@@ -1,23 +1,23 @@
 import { useEffect, useState } from 'react';
 import { Builder } from './components/Builder';
 import { Home } from './components/Home';
+import { initAnalytics, trackPage } from './lib/analytics';
 import type { CommonOptions } from './lib/render';
+import { parseRoute } from './lib/share';
 import { load, save } from './lib/storage';
 import { findWorksheet } from './worksheets';
 
 const COMMON_DEFAULTS: CommonOptions = { paper: 'A4', childName: '', showNameLine: true, inkSaver: false };
 
-function routeId(): string {
-  return location.hash.replace(/^#\/?/, '');
-}
 
 export function App() {
-  const [route, setRoute] = useState(routeId);
+  const [hash, setHash] = useState(() => location.hash);
   const [common, setCommon] = useState<CommonOptions>(() => ({ ...COMMON_DEFAULTS, ...load('common', {}) }));
 
   useEffect(() => {
+    initAnalytics();
     const on = () => {
-      setRoute(routeId());
+      setHash(location.hash);
       window.scrollTo(0, 0);
     };
     window.addEventListener('hashchange', on);
@@ -26,7 +26,9 @@ export function App() {
 
   useEffect(() => save('common', common), [common]);
 
-  const ws = findWorksheet(route);
+  const route = parseRoute(hash);
+  const ws = findWorksheet(route.id);
+  useEffect(() => trackPage(route.id), [route.id]);
 
   return (
     <div className="app">
@@ -53,7 +55,7 @@ export function App() {
           </label>
         </div>
       </header>
-      {ws ? <Builder key={ws.id} def={ws} common={common} setCommon={setCommon} /> : <Home />}
+      {ws ? <Builder key={hash} def={ws} initial={route.opts} common={common} setCommon={setCommon} /> : <Home />}
     </div>
   );
 }

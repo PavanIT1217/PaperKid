@@ -6,7 +6,7 @@ import type { DrawPage, WorksheetDef } from './types';
  * Line-art pictures in a 200×200 box. Shapes are painted in order: each closed shape is
  * filled white first, so later shapes neatly cover earlier lines (no messy overlaps).
  */
-interface Shape {
+export interface Shape {
   d: string;
   open?: boolean; // open path: stroke only
   w?: number; // stroke width multiplier
@@ -269,6 +269,28 @@ export const PICTURES: Record<string, { label: string; word: string; shapes: Sha
   },
 };
 
+/** Draw a picture centred on (cx, cy), `size` mm square. */
+export function drawPicture(ctx: CanvasRenderingContext2D, pic: { shapes: Shape[] }, cx: number, cy: number, size: number, lineScale = 1) {
+  const s = size / 200;
+  ctx.save();
+  ctx.translate(cx - 100 * s, cy - 100 * s);
+  ctx.scale(s, s);
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = INK;
+  ctx.setLineDash([]);
+  for (const sh of pic.shapes) {
+    const path = new Path2D(sh.d);
+    ctx.lineWidth = 2.6 * (sh.w ?? 1) * lineScale;
+    if (!sh.open) {
+      ctx.fillStyle = '#ffffff';
+      ctx.fill(path);
+    }
+    ctx.stroke(path);
+  }
+  ctx.restore();
+}
+
 type ColorOpts = {
   pictures: string[];
   word: boolean;
@@ -282,6 +304,7 @@ export const coloring: WorksheetDef<ColorOpts> = {
   icon: '🖍️',
   blurb: 'Big, bold outlines that are easy to color – with a word to trace underneath.',
   grades: 'Toddler – Grade 1',
+  category: 'fun',
   theme,
   defaults: { pictures: ['apple', 'sun', 'house', 'fish', 'flower', 'butterfly'], word: true },
   fields: [
@@ -307,23 +330,7 @@ export const coloring: WorksheetDef<ColorOpts> = {
         ctx.stroke();
         ctx.restore();
 
-        const s = (box - 14) / 200;
-        ctx.save();
-        ctx.translate(W / 2 - 100 * s, top + boxH / 2 - 100 * s);
-        ctx.scale(s, s);
-        ctx.lineJoin = 'round';
-        ctx.lineCap = 'round';
-        ctx.strokeStyle = INK;
-        for (const sh of pic.shapes) {
-          const path = new Path2D(sh.d);
-          ctx.lineWidth = 2.6 * (sh.w ?? 1);
-          if (!sh.open) {
-            ctx.fillStyle = '#ffffff';
-            ctx.fill(path);
-          }
-          ctx.stroke(path);
-        }
-        ctx.restore();
+        drawPicture(ctx, pic, W / 2, top + boxH / 2, box - 14);
 
         if (o.word) {
           const cap = 16;

@@ -8,6 +8,16 @@ export interface Paper {
   margin: number;
 }
 
+export type Category = 'packs' | 'writing' | 'reading' | 'math' | 'fun';
+
+export const CATEGORIES: { id: Category; title: string; blurb: string }[] = [
+  { id: 'packs', title: 'Packs, daily pages & rewards', blurb: 'Ready-made bundles, a fresh page every day, certificates and star charts.' },
+  { id: 'writing', title: 'Handwriting', blurb: 'Letters, names, cursive, Indian scripts and pencil control.' },
+  { id: 'reading', title: 'Reading & phonics', blurb: 'Sight-word sentences, letter sounds and alphabet games.' },
+  { id: 'math', title: 'Math', blurb: 'Counting, sums, times tables, number sense, clocks and money.' },
+  { id: 'fun', title: 'Puzzles & coloring', blurb: 'Mazes, dot-to-dot, patterns, shapes and coloring pages.' },
+];
+
 export interface Choice {
   value: string;
   label: string;
@@ -28,6 +38,7 @@ export type Field =
   | (FieldBase & { type: 'number'; min: number; max: number })
   | (FieldBase & { type: 'text'; placeholder?: string; multiline?: boolean })
   | (FieldBase & { type: 'chips'; options: Choice[]; compact?: boolean })
+  | (FieldBase & { type: 'date' })
   | (FieldBase & { type: 'reroll' });
 
 export interface WorksheetDef<O extends Record<string, unknown> = Record<string, unknown>> {
@@ -36,6 +47,7 @@ export interface WorksheetDef<O extends Record<string, unknown> = Record<string,
   icon: string;
   blurb: string;
   grades: string;
+  category: Category;
   theme: Theme;
   defaults: O;
   fields: Field[];

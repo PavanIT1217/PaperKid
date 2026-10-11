@@ -53,7 +53,18 @@ export function OptionsForm({ fields, values, onChange }: Props) {
                 <label key={f.key} className="field toggle">
                   <input type="checkbox" checked={Boolean(values[f.key])} onChange={(e) => set(f.key, e.target.checked)} />
                   <span className="switch" aria-hidden />
-                  <span>{f.label}</span>
+                  <span>
+                    {f.label}
+                    {f.hint && <small className="field-hint">{f.hint}</small>}
+                  </span>
+                </label>
+              );
+            case 'date':
+              return (
+                <label key={f.key} className="field">
+                  <span className="field-label">{f.label}</span>
+                  <input type="date" value={String(values[f.key] ?? '')} onChange={(e) => set(f.key, e.target.value)} />
+                  {f.hint && <small className="field-hint">{f.hint}</small>}
                 </label>
               );
             case 'number': {

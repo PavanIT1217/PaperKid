@@ -121,6 +121,7 @@ export const shapes: WorksheetDef<ShapeOpts> = {
   icon: '🔷',
   blurb: 'Trace circles, triangles, stars, hearts and more – then color them in.',
   grades: 'Pre-K – Grade 1',
+  category: 'fun',
   theme,
   defaults: { shapes: SHAPES.slice(0, 8).map((s) => s.value), mode: 'rows', name: true },
   fields: [

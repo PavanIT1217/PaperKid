@@ -5,6 +5,9 @@ import '@fontsource/andika/latin-700.css';
 import '@fontsource/fredoka/latin-400.css';
 import '@fontsource/fredoka/latin-500.css';
 import '@fontsource/fredoka/latin-600.css';
+import '@fontsource/playwrite-us-trad/400.css';
+import '@fontsource/noto-sans-devanagari/devanagari-500.css';
+import '@fontsource/noto-sans-telugu/telugu-500.css';
 import './styles.css';
 import { App } from './App';
 

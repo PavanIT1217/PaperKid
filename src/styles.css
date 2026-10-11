@@ -377,6 +377,7 @@ a {
 }
 
 .field input[type='text'],
+.field input[type='date'],
 .field textarea,
 .field select {
   border: 1.5px solid var(--line);
@@ -706,4 +707,121 @@ a {
   .paper-select span {
     display: none;
   }
+}
+
+.field-hint {
+  display: block;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 400;
+}
+
+.secondary-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.btn.small {
+  padding: 8px 10px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.toast {
+  background: #2b2d42;
+  color: #fff;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+/* ---------------------------------------------------------------- home: packs, saved, categories */
+.hero-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.hero-cta .btn {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.pack-strip {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 4px 2px 12px;
+  margin: 0 0 8px;
+  scrollbar-width: thin;
+}
+
+.pack-chip {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 10px 14px;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+}
+
+.pack-chip b {
+  display: block;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.pack-chip small {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.pack-icon {
+  font-size: 22px;
+}
+
+.saved-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.saved-item {
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 6px 4px 14px;
+}
+
+.saved-item a {
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.saved-item button {
+  border: none;
+  background: none;
+  font-size: 18px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0 6px;
+}
+
+.category {
+  margin-top: 28px;
+}
+
+.section-blurb {
+  margin: -10px 0 14px;
+  color: var(--muted);
+  font-family: 'Andika', sans-serif;
 }

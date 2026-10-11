@@ -134,7 +134,18 @@ export function line(ctx: Ctx, x1: number, y1: number, x2: number, y2: number) {
 
 // ---------------------------------------------------------------- glyph text
 
-export type GlyphStyle = 'solid' | 'trace' | 'model' | 'faint';
+/**
+ * solid  – dark ink (example to copy)
+ * model  – solid + numbered stroke-order arrows
+ * trace  – dotted line to trace
+ * hint   – dotted + small stroke-order arrows
+ * light  – lighter dots (fading practice)
+ * start  – only a dot where each stroke begins (last step before writing alone)
+ * faint  – very light solid
+ */
+export type GlyphStyle = 'solid' | 'trace' | 'model' | 'hint' | 'light' | 'start' | 'faint';
+
+export const LIGHT_GREY = '#c4cbd7';
 
 const pathCache = new Map<string, Path2D>();
 function path2d(d: string): Path2D {
@@ -202,22 +213,37 @@ export function glyphText(ctx: Ctx, s: string, x: number, y: number, cap: number
 
     ctx.save();
     ctx.translate(cx, 0);
-    if (style === 'trace') setTraceStyle(ctx, lw, color ?? TRACE_GREY);
-    else if (style === 'faint') setSolidStyle(ctx, lw, color ?? '#d5dae3');
-    else setSolidStyle(ctx, lw, color ?? INK);
+    const dotted = style === 'trace' || style === 'hint' || style === 'light';
+    const ink =
+      style === 'trace' || style === 'hint' ? (color ?? TRACE_GREY) :
+      style === 'light' ? LIGHT_GREY :
+      style === 'faint' ? '#d5dae3' : (color ?? INK);
+    if (dotted) setTraceStyle(ctx, lw, ink);
+    else setSolidStyle(ctx, lw, ink);
 
-    for (const d of g.strokes) ctx.stroke(path2d(d));
+    if (style === 'start') {
+      // just a green dot at each stroke start, and the pen taps
+      ctx.fillStyle = '#2fb36f';
+      for (const d of g.strokes) {
+        const st = strokeStart(d);
+        ctx.beginPath();
+        ctx.arc(st.x, st.y, lw * 0.8, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = LIGHT_GREY;
+    } else {
+      for (const d of g.strokes) ctx.stroke(path2d(d));
+      ctx.fillStyle = ink;
+    }
     for (const [dx, dy] of g.dots ?? []) {
       ctx.beginPath();
       ctx.setLineDash([]);
       ctx.arc(dx, dy, lw * 0.75, 0, Math.PI * 2);
-      ctx.fillStyle = style === 'trace' ? (color ?? TRACE_GREY) : style === 'faint' ? '#d5dae3' : (color ?? INK);
       ctx.fill();
     }
 
-    if (style === 'model') {
-      g.strokes.forEach((d, i) => drawStrokeHint(ctx, d, i, lw));
-    }
+    if (style === 'model') g.strokes.forEach((d, i) => drawStrokeHint(ctx, d, i, lw));
+    if (style === 'hint') g.strokes.forEach((d, i) => drawStrokeHint(ctx, d, i, lw * 0.7, true));
     ctx.restore();
     cx += g.width;
   }
@@ -225,9 +251,27 @@ export function glyphText(ctx: Ctx, s: string, x: number, y: number, cap: number
   return measureText(s) * k;
 }
 
-function drawStrokeHint(ctx: Ctx, d: string, i: number, lw: number) {
+function drawStrokeHint(ctx: Ctx, d: string, i: number, lw: number, small = false) {
   const st = strokeStart(d);
   const color = STROKE_COLORS[i % STROKE_COLORS.length];
+  if (small) {
+    // compact version for traced copies: arrow only, no number
+    ctx.save();
+    ctx.setLineDash([]);
+    ctx.fillStyle = color;
+    const a = st.angle;
+    const s = lw * 1.3;
+    const ax = st.x + Math.cos(a) * s * 0.4;
+    const ay = st.y + Math.sin(a) * s * 0.4;
+    ctx.beginPath();
+    ctx.moveTo(ax + Math.cos(a) * s, ay + Math.sin(a) * s);
+    ctx.lineTo(ax + Math.cos(a + 2.4) * s, ay + Math.sin(a + 2.4) * s);
+    ctx.lineTo(ax + Math.cos(a - 2.4) * s, ay + Math.sin(a - 2.4) * s);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+    return;
+  }
   const r = lw * 1.25;
   // numbered dot sits just before the start point (so strokes sharing a start don't hide each other),
   // the arrow just after it, pointing the way to write.
@@ -269,7 +313,16 @@ export function practiceRow(
   y: number,
   w: number,
   cap: number,
-  opts: { first?: GlyphStyle | 'none'; traceCount?: number; gap?: number; descender?: boolean } = {},
+  opts: {
+    first?: GlyphStyle | 'none';
+    traceCount?: number;
+    gap?: number;
+    descender?: boolean;
+    /** style of the copies after the first (default 'trace') */
+    traceStyle?: GlyphStyle;
+    /** stroke arrows on the first traced copy */
+    hintFirst?: boolean;
+  } = {},
 ) {
   guideLines(ctx, x, y, w, cap, opts.descender ?? true);
   const unitW = (measureText(s) * cap) / 100;
@@ -283,8 +336,10 @@ export function practiceRow(
     if (n === 0 && first !== 'none') {
       glyphText(ctx, s, cx, y, cap, first);
     } else {
-      if (n - (first === 'none' ? 0 : 1) >= max) break;
-      glyphText(ctx, s, cx, y, cap, 'trace');
+      const k = n - (first === 'none' ? 0 : 1);
+      if (k >= max) break;
+      const ts = opts.traceStyle ?? 'trace';
+      glyphText(ctx, s, cx, y, cap, k === 0 && opts.hintFirst && ts === 'trace' ? 'hint' : ts);
     }
     cx += unitW + gap;
     n++;
@@ -372,6 +427,13 @@ export function card(ctx: Ctx, x: number, y: number, w: number, h: number, theme
   ctx.strokeStyle = inkSaver ? '#c3c9d6' : theme.main;
   ctx.stroke();
   ctx.restore();
+}
+
+/** Trace style for row `i` of `n` when practice should fade out gradually. */
+export function fadeStyle(i: number, n: number): GlyphStyle {
+  if (n <= 2) return 'trace';
+  const f = i / (n - 1);
+  return f < 0.45 ? 'trace' : f < 0.8 ? 'light' : 'start';
 }
 
 export function shuffle<T>(arr: T[], rand: () => number): T[] {

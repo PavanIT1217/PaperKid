@@ -1,4 +1,4 @@
-import { footer, header, practiceRow } from '../lib/draw';
+import { fadeStyle, footer, header, practiceRow } from '../lib/draw';
 import { hasGlyph, measureText } from '../lib/glyphs';
 import { capFor, rowPitch, SIZE_FIELD, type DrawPage, type WorksheetDef } from './types';
 
@@ -29,6 +29,8 @@ type WordOpts = {
   source: string;
   custom: string;
   rowsPerWord: number;
+  hints: boolean;
+  fade: boolean;
   size: 'large' | 'medium' | 'small';
 };
 
@@ -50,8 +52,9 @@ export const words: WorksheetDef<WordOpts> = {
   icon: '📝',
   blurb: "Trace your child's name, spelling words or grade-level sight words.",
   grades: 'Pre-K – Grade 3',
+  category: 'writing',
   theme,
-  defaults: { source: 'custom', custom: 'I can read!\nsun\ncat\nThe dog can run.', rowsPerWord: 2, size: 'medium' },
+  defaults: { source: 'custom', custom: 'I can read!\nsun\ncat\nThe dog can run.', rowsPerWord: 2, size: 'medium', hints: false, fade: false },
   fields: [
     {
       type: 'select',
@@ -69,6 +72,8 @@ export const words: WorksheetDef<WordOpts> = {
     },
     { type: 'number', key: 'rowsPerWord', label: 'Rows per word', min: 1, max: 4 },
     SIZE_FIELD,
+    { type: 'toggle', key: 'hints', label: 'Arrows on traced letters' },
+    { type: 'toggle', key: 'fade', label: 'Fade the dots row by row', hint: 'Dark dots → light dots → start dots only' },
   ],
   fileName: (o) => `PaperKid-words-${o.source}`,
   build(o, paper) {
@@ -100,8 +105,10 @@ export const words: WorksheetDef<WordOpts> = {
         for (let r = 0; r < rowsPer; r++) {
           const last = r === rowsPer - 1 && rowsPer > 1;
           practiceRow(ctx, word, m, y, cw, cap, {
-            first: r === 0 ? 'solid' : 'trace',
-            traceCount: last ? 1 : undefined,
+            first: r === 0 ? 'solid' : o.fade ? fadeStyle(r, rowsPer) : 'trace',
+            traceStyle: o.fade ? fadeStyle(r, rowsPer) : 'trace',
+            hintFirst: o.hints,
+            traceCount: last && !o.fade ? 1 : undefined,
             gap: Math.max(cap * 0.9, 6),
           });
           y += rowPitch(cap);

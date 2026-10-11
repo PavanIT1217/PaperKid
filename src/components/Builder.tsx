@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { track } from '../lib/analytics';
 import { buildPdf, pageInfo, PAPER, printPdf, savePdf, type CommonOptions } from '../lib/render';
+import { addSaved } from '../lib/saved';
+import { shareUrl } from '../lib/share';
 import { load, save } from '../lib/storage';
 import type { WorksheetDef } from '../worksheets/types';
 import { OptionsForm } from './OptionsForm';
@@ -7,6 +10,8 @@ import { PageCanvas } from './PageCanvas';
 
 interface Props {
   def: WorksheetDef;
+  /** options from a shared link, if any */
+  initial?: Record<string, unknown> | null;
   common: CommonOptions;
   setCommon: (c: CommonOptions) => void;
 }
@@ -38,9 +43,38 @@ function usePreviewWidth() {
   return [ref, w] as const;
 }
 
-export function Builder({ def, common, setCommon }: Props) {
-  const [opts, setOpts] = useState<Record<string, unknown>>(() => ({ ...def.defaults, ...load(`ws:${def.id}`, {}) }));
+export function Builder({ def, initial, common, setCommon }: Props) {
+  const [opts, setOpts] = useState<Record<string, unknown>>(() => ({ ...def.defaults, ...(initial ?? load(`ws:${def.id}`, {})) }));
   const [busy, setBusy] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 2600);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  const share = async () => {
+    const url = shareUrl(def.id, opts);
+    track('share_link', { worksheet: def.id });
+    try {
+      if (navigator.share && /Android|iPhone|iPad/.test(navigator.userAgent)) {
+        await navigator.share({ title: `PaperKid – ${def.title}`, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      setToast('Link copied! Anyone with it gets these same settings.');
+    } catch {
+      window.prompt('Copy this link:', url);
+    }
+  };
+
+  const saveSheet = () => {
+    const name = window.prompt('Name for this worksheet', def.title);
+    if (name === null) return;
+    addSaved({ id: def.id, name: name.trim() || def.title, icon: def.icon, opts });
+    track('save_sheet', { worksheet: def.id });
+    setToast('Saved! Find it under “My saved worksheets” on the home page.');
+  };
   const [ref, cssWidth] = usePreviewWidth();
 
   useEffect(() => save(`ws:${def.id}`, opts), [def.id, opts]);
@@ -56,6 +90,7 @@ export function Builder({ def, common, setCommon }: Props) {
     try {
       const fresh = def.build(opts, PAPER[common.paper]);
       const pdf = await buildPdf(fresh, common, (n) => setBusy(`Page ${n} of ${fresh.length}…`));
+      track(kind === 'download' ? 'download_pdf' : 'print_pdf', { worksheet: def.id, pages: fresh.length });
       if (kind === 'download') await savePdf(pdf, def.fileName(opts));
       else await printPdf(pdf, def.fileName(opts));
     } catch (e) {
@@ -111,6 +146,19 @@ export function Builder({ def, common, setCommon }: Props) {
             🖨 Print
           </button>
         </div>
+        <div className="secondary-actions">
+          <button className="btn small" onClick={share}>
+            🔗 Share link
+          </button>
+          <button className="btn small" onClick={saveSheet}>
+            ♡ Save
+          </button>
+        </div>
+        {toast && (
+          <div className="toast" role="status">
+            {toast}
+          </div>
+        )}
         <div className="page-count">
           {pages.length} page{pages.length === 1 ? '' : 's'} · {common.paper === 'A4' ? 'A4 (210 × 297 mm)' : 'US Letter'}
         </div>
