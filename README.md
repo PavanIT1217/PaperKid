@@ -46,7 +46,7 @@ npm run build      # production build in dist/
 
 `.github/workflows/deploy.yml` builds and publishes the site on every push to `main`.
 One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-The site will be at `https://<your-user>.github.io/PaperKid/`.
+Live at **https://paperkid.webappslab.com** (custom domain set in Settings → Pages).
 
 ## Mobile apps (App Store / Play Store)
 
@@ -56,7 +56,7 @@ npm run cap:ios       # builds, syncs, opens Xcode (macOS only)
 ```
 
 From Android Studio: *Build → Generate Signed App Bundle* → upload the `.aab` to Google Play Console.
-From Xcode: set your Team & bundle id (`com.paperkid.app` in `capacitor.config.ts`), *Product → Archive* → upload to App Store Connect.
+From Xcode: set your Team & bundle id (`com.webappslab.paperkid` in `capacitor.config.ts`), *Product → Archive* → upload to App Store Connect.
 Before publishing you'll want app icons and splash screens (e.g. `npx @capacitor/assets generate`).
 
 ## Ideas for next steps

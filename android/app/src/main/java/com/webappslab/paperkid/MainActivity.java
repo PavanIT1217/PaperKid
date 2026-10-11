@@ -1,4 +1,4 @@
-package com.paperkid.app;
+package com.webappslab.paperkid;
 
 import com.getcapacitor.BridgeActivity;
 
