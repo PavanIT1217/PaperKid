@@ -6,7 +6,10 @@ import { startWorkbook } from '../lib/workbooks';
 import { nextStartLetter, type DailyOpts } from '../worksheets/daily';
 import { buildPdf, type CommonOptions, pageInfo, paperFor, printPdf, savePdf } from '../lib/render';
 import { addSaved } from '../lib/saved';
-import { shareUrl } from '../lib/share';
+import { routeFor, shareUrl, type Route } from '../lib/share';
+import { pageById } from '../seo/content';
+import { copyFor } from '../seo/copy';
+import { SeoAbout } from './SeoAbout';
 import { load, save } from '../lib/storage';
 import type { WorksheetDef } from '../worksheets/types';
 import { OptionsForm } from './OptionsForm';
@@ -14,6 +17,7 @@ import { PageCanvas } from './PageCanvas';
 
 interface Props {
   def: WorksheetDef;
+  route: Route;
   /** options from a shared link, if any */
   initial?: Record<string, unknown> | null;
   common: CommonOptions;
@@ -47,7 +51,9 @@ function usePreviewWidth() {
   return [ref, w] as const;
 }
 
-export function Builder({ def, initial, common, setCommon }: Props) {
+export function Builder({ def, route, initial, common, setCommon }: Props) {
+  const copy = copyFor(def.id, route.variant, typeof route.opts?.pack === 'string' ? route.opts.pack : undefined);
+  const base = pageById(def.id);
   const [opts, setOpts] = useState<Record<string, unknown>>(() => ({ ...def.defaults, ...(initial ?? load(`ws:${def.id}`, {})) }));
   const [busy, setBusy] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -155,11 +161,19 @@ export function Builder({ def, initial, common, setCommon }: Props) {
   return (
     <main className="builder" style={{ ['--accent' as string]: def.theme.main, ['--soft' as string]: def.theme.soft }}>
       <aside className="panel">
-        <a className="back" href="#/">
-          ← All worksheets
-        </a>
+        <nav className="breadcrumbs" aria-label="Breadcrumb">
+          <a href="/">Home</a>
+          <span aria-hidden>›</span>
+          {route.variant ? <a href={routeFor(def.id)}>{def.title}</a> : <span aria-current="page">{def.title}</span>}
+          {route.variant && (
+            <>
+              <span aria-hidden>›</span>
+              <span aria-current="page">{def.id === 'packs' ? copy?.h1.replace(/ workbook$/, '') : route.variant.toUpperCase()}</span>
+            </>
+          )}
+        </nav>
         <h1>
-          <span className="card-icon">{def.icon}</span> {def.title}
+          <span className="card-icon">{def.icon}</span> {copy?.h1 ?? def.title}
         </h1>
         <p className="panel-blurb">{def.blurb}</p>
 
@@ -234,6 +248,7 @@ export function Builder({ def, initial, common, setCommon }: Props) {
             ))}
           </div>
         )}
+        {copy && <SeoAbout copy={route.variant && base ? { ...base, ...copy } : copy} />}
       </section>
     </main>
   );

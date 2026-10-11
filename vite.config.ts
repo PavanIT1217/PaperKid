@@ -1,9 +1,9 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// Relative base so the same build works on GitHub Pages (sub-path) and inside the
-// Capacitor native shell (file-based).
+// Absolute base: pages live at real paths (/letter-tracing-worksheets/a/), so assets must
+// resolve from the site root. The Capacitor shell also serves the app from its root.
 export default defineConfig({
-  base: './',
+  base: '/',
   plugins: [react()],
 });
