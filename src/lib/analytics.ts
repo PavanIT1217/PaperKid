@@ -33,6 +33,6 @@ export function track(event: string, params: Record<string, string | number> = {
   window.gtag('event', event, params);
 }
 
-export function trackPage(id: string) {
-  track('page_view', { page_title: id || 'home', page_location: `${location.origin}${location.pathname}#/${id}` });
+export function trackPage(path: string) {
+  track('page_view', { page_title: document.title, page_location: `${location.origin}${path}`, page_path: path });
 }

@@ -6,7 +6,7 @@
   "description": "Printable A4 practice worksheets for kids: letters, numbers, words, math, shapes, pre-writing and coloring.",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build && vite build --ssr src/seo/entry.ts --outDir dist-ssr && node scripts/prerender.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "cap:sync": "npm run build && cap sync",

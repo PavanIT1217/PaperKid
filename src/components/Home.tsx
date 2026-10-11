@@ -42,7 +42,7 @@ export function Home({ country }: { country: string }) {
     thumbs
       .filter(({ w }) => w.category === cat)
       .map(({ w, page }) => (
-        <a key={w.id} className="card" href={`#/${w.id}`} style={{ ['--accent' as string]: w.theme.main, ['--soft' as string]: w.theme.soft }}>
+        <a key={w.id} className="card" href={routeFor(w.id)} style={{ ['--accent' as string]: w.theme.main, ['--soft' as string]: w.theme.soft }}>
           <div className="card-thumb">{page && <PageCanvas draw={page} info={INFO} cssWidth={150} label={`${w.title} example`} />}</div>
           <div className="card-body">
             <div className="card-title">
@@ -61,18 +61,19 @@ export function Home({ country }: { country: string }) {
     <main className="home">
       <section className="hero">
         <div className="hero-text">
+          <p className="eyebrow">Free printable worksheets for kids · Pre-K to Grade 3</p>
           <h1>
-            Practice pages your kids <span className="hl">love</span> to fill in.
+            Printable worksheets your kids <span className="hl">love</span> to fill in.
           </h1>
           <p>
             Free printable worksheets for Pre-K to Grade 3 – tracing with stroke-order arrows, names and sight words, cursive, other
             alphabets, math, clocks, money, mazes, dot-to-dots and coloring. Ready in seconds, no sign-up.
           </p>
           <div className="hero-cta">
-            <a className="btn primary" href="#/daily">
+            <a className="btn primary" href={routeFor('daily')}>
               📅 Today's practice page
             </a>
-            <a className="btn" href="#/packs">
+            <a className="btn" href={routeFor('packs')}>
               📚 Workbook packs
             </a>
           </div>
@@ -144,7 +145,6 @@ export function Home({ country }: { country: string }) {
           <b>3</b> Download the PDF & print
         </div>
       </section>
-      <footer className="site-footer">Made with ❤️ for little learners · PaperKid</footer>
-    </main>
+          </main>
   );
 }

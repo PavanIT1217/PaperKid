@@ -2,43 +2,43 @@
   "background_color": "#fff8f0",
   "icons": [
     {
-      "src": "icons/icon-48.webp",
+      "src": "/icons/icon-48.webp",
       "type": "image/webp",
       "sizes": "48x48",
       "purpose": "any"
     },
     {
-      "src": "icons/icon-72.webp",
+      "src": "/icons/icon-72.webp",
       "type": "image/webp",
       "sizes": "72x72",
       "purpose": "any"
     },
     {
-      "src": "icons/icon-96.webp",
+      "src": "/icons/icon-96.webp",
       "type": "image/webp",
       "sizes": "96x96",
       "purpose": "any"
     },
     {
-      "src": "icons/icon-128.webp",
+      "src": "/icons/icon-128.webp",
       "type": "image/webp",
       "sizes": "128x128",
       "purpose": "any"
     },
     {
-      "src": "icons/icon-192.webp",
+      "src": "/icons/icon-192.webp",
       "type": "image/webp",
       "sizes": "192x192",
       "purpose": "any"
     },
     {
-      "src": "icons/icon-256.webp",
+      "src": "/icons/icon-256.webp",
       "type": "image/webp",
       "sizes": "256x256",
       "purpose": "any"
     },
     {
-      "src": "icons/icon-512.webp",
+      "src": "/icons/icon-512.webp",
       "type": "image/webp",
       "sizes": "512x512",
       "purpose": "any"
@@ -46,7 +46,9 @@
   ],
   "name": "PaperKid \u2013 printable worksheets for kids",
   "short_name": "PaperKid",
-  "start_url": "./",
+  "start_url": "/",
   "display": "standalone",
-  "theme_color": "#ff8a3d"
+  "theme_color": "#ff8a3d",
+  "scope": "/",
+  "description": "Free printable worksheets for kids: tracing, math, mazes and coloring."
 }

@@ -5,7 +5,9 @@ import { Home } from './components/Home';
 import { initAnalytics, trackPage } from './lib/analytics';
 import { COUNTRIES, countryOf, guessCountry } from './lib/country';
 import type { CommonOptions } from './lib/render';
-import { parseRoute } from './lib/share';
+import { interceptLinks, legacyHashTarget, navigate, onNavigate, parseLocation } from './lib/share';
+import { applyHead, copyFor, fullTitle, HOME_COPY } from './seo/copy';
+import { SiteFooter } from './components/SiteFooter';
 import { load, save } from './lib/storage';
 import { findWorksheet } from './worksheets';
 
@@ -16,30 +18,51 @@ function initialCommon(): CommonOptions {
 }
 
 
+const here = () => location.pathname + location.search;
+
 export function App() {
-  const [hash, setHash] = useState(() => location.hash);
+  const [url, setUrl] = useState(() => {
+    // old "#/letters?o=…" links → "/letter-tracing-worksheets/?o=…"
+    const legacy = legacyHashTarget(location.hash);
+    if (legacy) history.replaceState(null, '', legacy);
+    return here();
+  });
   const [common, setCommon] = useState<CommonOptions>(initialCommon);
 
   useEffect(() => {
     initAnalytics();
-    const on = () => {
-      setHash(location.hash);
+    const stopLinks = interceptLinks();
+    const stopNav = onNavigate(() => {
+      setUrl(here());
       window.scrollTo(0, 0);
+    });
+    return () => {
+      stopLinks();
+      stopNav();
     };
-    window.addEventListener('hashchange', on);
-    return () => window.removeEventListener('hashchange', on);
   }, []);
 
   useEffect(() => save('common', common), [common]);
 
-  const route = parseRoute(hash);
-  const ws = findWorksheet(route.id);
-  useEffect(() => trackPage(route.id), [route.id]);
+  const route = parseLocation(location.pathname, location.search);
+  const ws = route.id ? findWorksheet(route.id) : undefined;
+
+  useEffect(() => {
+    if (route.id === null) applyHead('Page not found | PaperKid', HOME_COPY.description, route.path, true);
+    else if (!route.id) applyHead(HOME_COPY.title, HOME_COPY.description, '/');
+    else {
+      const c = copyFor(route.id, route.variant, typeof route.opts?.pack === 'string' ? route.opts.pack : undefined);
+      // shared-settings links (?o=…) duplicate the main page: keep them out of the index
+      if (c) applyHead(fullTitle(c.title), c.description, route.path, new URLSearchParams(location.search).has('o'));
+    }
+    trackPage(route.path);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [url]);
 
   return (
     <div className="app">
       <header className="topbar">
-        <a className="brand" href="#/">
+        <a className="brand" href="/" aria-label="PaperKid home">
           <span className="brand-mark" aria-hidden>
             <svg viewBox="0 0 64 64" width="30" height="30">
               <rect x="6" y="4" width="46" height="56" rx="7" fill="#fff" stroke="#ff8a3d" strokeWidth="4" />
@@ -78,7 +101,19 @@ export function App() {
           <AccountButton />
         </div>
       </header>
-      {ws ? <Builder key={hash} def={ws} initial={route.opts} common={common} setCommon={setCommon} /> : <Home country={common.country} />}
+      {ws ? (
+        <Builder key={url} def={ws} route={route} initial={route.opts} common={common} setCommon={setCommon} />
+      ) : (
+        <>
+          {route.id === null && (
+            <div className="not-found" role="alert">
+              We couldn’t find that page – here are all our worksheets. <button onClick={() => navigate('/', true)}>Go home</button>
+            </div>
+          )}
+          <Home country={common.country} />
+        </>
+      )}
+      <SiteFooter />
     </div>
   );
 }

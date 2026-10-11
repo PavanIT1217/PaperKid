@@ -75,6 +75,13 @@ From Android Studio: *Build → Generate Signed App Bundle* → upload the `.aab
 From Xcode: set your Team & bundle id (`com.webappslab.paperkid` in `capacitor.config.ts`), *Product → Archive* → upload to App Store Connect.
 Before publishing you'll want app icons and splash screens (e.g. `npx @capacitor/assets generate`).
 
+## SEO
+
+- Real page addresses (`/letter-tracing-worksheets/`, `/letter-tracing-worksheets/a/`, `/number-tracing-worksheets/5/`, `/workbook-packs/kindergarten-week/` …); old `#/…` links redirect.
+- `npm run build` prerenders **75 static pages** (home, 20 worksheets, A–Z, 0–20, 7 packs) with their own title, meta description, canonical URL, Open Graph/Twitter tags, JSON-LD (`WebSite`, `Organization`, `WebApplication`, `LearningResource`, `BreadcrumbList`, `FAQPage`) and readable content; then writes `sitemap.xml`, `robots.txt` and `404.html`.
+- Page copy lives in `src/seo/content.ts`; the build step is `src/seo/entry.ts` + `scripts/prerender.mjs`.
+- Shared-settings links (`?o=…`) are `noindex` with a canonical pointing at the main page.
+
 ## Sign-in & saved worksheets (Firebase)
 
 - **Sign in with Google** (top bar, website) uses Firebase Authentication, project `paperkid`.
