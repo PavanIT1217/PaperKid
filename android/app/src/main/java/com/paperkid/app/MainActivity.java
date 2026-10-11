@@ -1,0 +1,5 @@
+package com.paperkid.app;
+
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {}
