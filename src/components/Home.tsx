@@ -7,6 +7,7 @@ import { WORKSHEETS } from '../worksheets';
 import { PACKS } from '../worksheets/packs';
 import { CATEGORIES } from '../worksheets/types';
 import { PageCanvas } from './PageCanvas';
+import { Workbooks } from './Workbooks';
 
 const INFO = pageInfo({ paper: 'A4', childName: '', showNameLine: true, inkSaver: false }, 0, 1);
 
@@ -37,6 +38,25 @@ export function Home() {
   );
   const letters = thumbs.find((t) => t.w.id === 'letters');
 
+  const cardsFor = (cat: string) =>
+    thumbs
+      .filter(({ w }) => w.category === cat)
+      .map(({ w, page }) => (
+        <a key={w.id} className="card" href={`#/${w.id}`} style={{ ['--accent' as string]: w.theme.main, ['--soft' as string]: w.theme.soft }}>
+          <div className="card-thumb">{page && <PageCanvas draw={page} info={INFO} cssWidth={150} label={`${w.title} example`} />}</div>
+          <div className="card-body">
+            <div className="card-title">
+              <span className="card-icon">{w.icon}</span>
+              {w.title}
+            </div>
+            <div className="card-grades">{w.grades}</div>
+            <p>{w.blurb}</p>
+            <span className="card-cta">Create →</span>
+          </div>
+        </a>
+      ));
+  const packsCat = CATEGORIES.find((c) => c.id === 'packs')!;
+
   return (
     <main className="home">
       <section className="hero">
@@ -64,18 +84,6 @@ export function Home() {
         </div>
       </section>
 
-      <section className="pack-strip" aria-label="Workbook packs">
-        {Object.entries(PACKS).map(([id, pk]) => (
-          <a key={id} className="pack-chip" href={routeFor('packs', { pack: id, cover: true, certificate: true })}>
-            <span className="pack-icon">{pk.icon}</span>
-            <span>
-              <b>{pk.title}</b>
-              <small>{pk.grades}</small>
-            </span>
-          </a>
-        ))}
-      </section>
-
       {saved.length > 0 && (
         <section className="saved">
           <h2 className="section-title">My saved worksheets</h2>
@@ -98,30 +106,32 @@ export function Home() {
         </section>
       )}
 
-      {CATEGORIES.map((cat) => (
+      <Workbooks />
+
+      {CATEGORIES.filter((c) => c.id !== 'packs').map((cat) => (
         <section key={cat.id} className="category">
           <h2 className="section-title">{cat.title}</h2>
           <p className="section-blurb">{cat.blurb}</p>
-          <div className="cards">
-            {thumbs
-              .filter(({ w }) => w.category === cat.id)
-              .map(({ w, page }) => (
-                <a key={w.id} className="card" href={`#/${w.id}`} style={{ ['--accent' as string]: w.theme.main, ['--soft' as string]: w.theme.soft }}>
-                  <div className="card-thumb">{page && <PageCanvas draw={page} info={INFO} cssWidth={150} label={`${w.title} example`} />}</div>
-                  <div className="card-body">
-                    <div className="card-title">
-                      <span className="card-icon">{w.icon}</span>
-                      {w.title}
-                    </div>
-                    <div className="card-grades">{w.grades}</div>
-                    <p>{w.blurb}</p>
-                    <span className="card-cta">Create →</span>
-                  </div>
-                </a>
-              ))}
-          </div>
+          <div className="cards">{cardsFor(cat.id)}</div>
         </section>
       ))}
+
+      <section className="packs-unit" id="packs">
+        <h2 className="section-title">📚 {packsCat.title}</h2>
+        <p className="section-blurb">{packsCat.blurb}</p>
+        <div className="pack-grid" aria-label="Workbook packs">
+          {Object.entries(PACKS).map(([id, pk]) => (
+            <a key={id} className="pack-chip" href={routeFor('packs', { pack: id, cover: true, certificate: true })}>
+              <span className="pack-icon">{pk.icon}</span>
+              <span>
+                <b>{pk.title}</b>
+                <small>{pk.grades}</small>
+              </span>
+            </a>
+          ))}
+        </div>
+        <div className="cards">{cardsFor('packs')}</div>
+      </section>
 
       <section className="how">
         <div>

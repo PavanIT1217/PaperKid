@@ -750,17 +750,15 @@ a {
   align-items: center;
 }
 
-.pack-strip {
-  display: flex;
+.pack-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 10px;
-  overflow-x: auto;
-  padding: 4px 2px 12px;
-  margin: 0 0 8px;
-  scrollbar-width: thin;
+  margin: 0 0 18px;
 }
 
 .pack-chip {
-  flex: 0 0 auto;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -905,5 +903,158 @@ a {
   }
   .signin {
     padding: 8px;
+  }
+}
+
+.panel-note {
+  margin: 0;
+  background: var(--soft);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-family: 'Andika', sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* ---------------------------------------------------------------- packs unit (separate block at the end) */
+.packs-unit {
+  margin-top: 40px;
+  padding: 24px 20px;
+  border-radius: 24px;
+  background: linear-gradient(160deg, #fff1e3 0%, #fdf7ff 100%);
+  border: 2px dashed #ffc79d;
+}
+
+.packs-unit .section-title {
+  margin-top: 0;
+}
+
+/* ---------------------------------------------------------------- my workbooks */
+.workbooks {
+  margin-top: 28px;
+}
+
+.workbook-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.workbook {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.workbook.complete {
+  border-color: #2fb36f;
+}
+
+.workbook header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.workbook header b {
+  display: block;
+  font-weight: 600;
+}
+
+.workbook header small {
+  color: var(--muted);
+}
+
+.progress {
+  height: 10px;
+  background: #f1ebe3;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #ffc933, #2fb36f);
+  border-radius: 999px;
+  transition: width 0.25s ease;
+}
+
+.workbook ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.workbook li label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-family: 'Andika', sans-serif;
+  font-size: 14.5px;
+  cursor: pointer;
+}
+
+.workbook li input {
+  width: 18px;
+  height: 18px;
+  accent-color: #2fb36f;
+}
+
+.workbook li input:checked + span {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.workbook-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.workbook-actions .btn {
+  text-decoration: none;
+}
+
+.btn.ghost-text {
+  border-color: transparent;
+  background: none;
+  color: var(--muted);
+}
+
+@media (max-width: 860px) {
+  .packs-unit {
+    padding: 18px 14px;
+    margin-left: -4px;
+    margin-right: -4px;
+  }
+  .pack-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 420px) {
+  .pack-grid {
+    gap: 8px;
+  }
+  .pack-chip {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+  .pack-chip b {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 330px) {
+  .pack-grid {
+    grid-template-columns: 1fr;
   }
 }

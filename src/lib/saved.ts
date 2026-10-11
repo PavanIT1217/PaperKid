@@ -16,6 +16,9 @@ let uid: string | null = null;
 export function setSavedAccount(u: string | null) {
   uid = u;
 }
+export function getSavedAccount(): string | null {
+  return uid;
+}
 
 function listLocal(): SavedSheet[] {
   const v = load<SavedSheet[]>('saved', []);
